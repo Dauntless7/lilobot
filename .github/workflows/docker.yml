@@ -2,7 +2,7 @@ name: Build and push docker image
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       - name: Login ghcr
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-        run:  docker login ghcr.io --username giorgi-o --password "$GHCR_TOKEN"
+        run: docker login ghcr.io --username giorgi-o --password "$GHCR_TOKEN"
       - name: Build and Push Image
         run: |
           docker buildx build \

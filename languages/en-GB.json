@@ -1,6 +1,6 @@
 {
   "translation_by": "Put your name here if translating :)",
-  "error":{
+  "error": {
     "NOT_REGISTERED": "**You're not registered with the bot!** Try `/login`.",
     "NOT_REGISTERED_OTHER": "**That user is not registered with the bot!**",
     "INVALID_PASSWORD": "Invalid username or password!",
@@ -29,8 +29,8 @@
     "OTHER_SHOP_DISABLED": "**{u} disabled the ability to let others see their shop!**",
     "OTHER_COLLECTION_DISABLED": "**{u} disabled the ability to let others see their collection!**",
     "STATS_DISABLED": "**Shop statistics are currently disabled for this bot!**",
-    "EMPTY_STATS":  "**I have no shop stats to display!** use `/shop` to get started.",
-    "NO_STATS_FOR_SKIN":  "**That skin hasn't been in anyone's shop** in the past {d} days!",
+    "EMPTY_STATS": "**I have no shop stats to display!** use `/shop` to get started.",
+    "NO_STATS_FOR_SKIN": "**That skin hasn't been in anyone's shop** in the past {d} days!",
     "NOT_UR_MESSAGE_STATS": "**That's not your message!** Use `/stats` to browse skin stats.",
     "NOT_UR_MESSAGE_BUNDLE": "**That's not your message!** Use `/bundle` to search for bundles.",
     "NOT_UR_MESSAGE_ALERT": "**That's not your message!** Use `/alert` to set your own alert.",
@@ -48,7 +48,7 @@
     "TOO_MANY_ACCOUNTS": "**You can only have maximum {n} accounts on the bot!** `/forget` some accounts and try again.",
     "GENERIC_ERROR": ":no_entry_sign: **There was an error trying to do that!** I blame Riot.\n`{e}`"
   },
-  "info":{
+  "info": {
     "SHOP_HEADER": "Daily shop for **{u}** (new shop <t:{t}:R>)",
     "BUNDLE_HEADER": "Featured bundle: **{b}**",
     "BUNDLES_HEADER": "Currently featured bundles:",

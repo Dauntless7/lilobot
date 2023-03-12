@@ -1,6 +1,6 @@
 {
   "translation_by": "Mad.",
-  "error":{
+  "error": {
     "NOT_REGISTERED": "**Nie jesteś zarejestrowany z botem!** spróbuj `/login`.",
     "NOT_REGISTERED_OTHER": "**Też użytkownik nie jest zarejestrowany z botem**",
     "INVALID_PASSWORD": "Nieprawidłowy login lub hasło!",
@@ -28,8 +28,8 @@
     "OTHER_SHOP_DISABLED": "**{u} wyłączyli możliwość, aby inni mogli zobaczyć swój sklep!**",
     "OTHER_COLLECTION_DISABLED": "**{u} wyłączyli możliwość, aby inni mogli zobaczyć swoją kolekcję!**",
     "STATS_DISABLED": "**Statystyki sklepu są obecnie wyłączone dla tego bota!**",
-    "EMPTY_STATS":  "**Nie mam statystyk sklepu do wyświetlenia!** użyj komendy `/shop` aby rozpocząć.",
-    "NO_STATS_FOR_SKIN":  "**Ta skóra nie była w niczyim sklepie** w ostatnich {d} dniach!",
+    "EMPTY_STATS": "**Nie mam statystyk sklepu do wyświetlenia!** użyj komendy `/shop` aby rozpocząć.",
+    "NO_STATS_FOR_SKIN": "**Ta skóra nie była w niczyim sklepie** w ostatnich {d} dniach!",
     "NOT_UR_MESSAGE_STATS": "**To nie twoja wiadomość!** Użyj `/stats` aby przeglądać statystyki skórek.",
     "NOT_UR_MESSAGE_BUNDLE": "**To nie twoja wiadomość!** Użyj `/bundle` aby wyszukać kolekcje.",
     "NOT_UR_MESSAGE_ALERT": "**To nie twoja wiadomość!** Użyj `/alert` aby ustawić własny alert.",
@@ -47,7 +47,7 @@
     "TOO_MANY_ACCOUNTS": "**Możesz mieć tylko maksimum {n} kont w tym bocie!** `/forget` niektóre konta i spróbuj ponownie.",
     "GENERIC_ERROR": ":no_entry_sign: **Wystąpił błąd podczas próby zrobienia tego!**"
   },
-  "info":{
+  "info": {
     "SHOP_HEADER": "Codzienny sklep dla **{u}** (nowy sklep <t:{t}:R>)",
     "BUNDLE_HEADER": "Polecany pakiet: **{b}**",
     "BUNDLES_HEADER": "Aktualnie polecane pakiety:",

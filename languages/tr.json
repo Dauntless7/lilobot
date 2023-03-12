@@ -107,7 +107,7 @@
     "COLLECTION_VIEW_IMAGES": "Resimleri görüntüle",
     "COLLECTION_VIEW_ALL": "Hepsini görüntüle",
     "ACCOUNT_SWITCHED": "**{n}. {u}** Hesaba geçildi",
-	"ACCOUNT_ALREADY_SELECTED": "**{u}** zaten seçili!",
+    "ACCOUNT_ALREADY_SELECTED": "**{u}** zaten seçili!",
     "ACCOUNTS_HEADER": "Botla giriş yaptığınız tüm hesaplarınız:",
     "ACCOUNT_CURRENTLY_SELECTED": "(Şuan seçili)",
     "SWITCH_ACCOUNT_BUTTON": "Hesap #{n}",

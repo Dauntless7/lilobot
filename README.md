@@ -1,11 +1,10 @@
 # SkinPeek
 
 Discord bot to view your Valorant daily shop, set alerts for specific skins, and much more.  
-Simple to setup, easy to use, and has many useful features and commands.  
+Simple to setup, easy to use, and has many useful features and commands.
 
 <img src="https://user-images.githubusercontent.com/20621396/184029573-588c84aa-e183-409c-9452-e8d13028c228.png" alt="shop" width="504" >  
 <img src="https://user-images.githubusercontent.com/20621396/184029594-18d59bc6-7a54-48c8-89fc-d89aac76b180.png" alt="alert" width="633" >
-
 
 <details>
 <summary>See some more screenshots</summary>
@@ -16,7 +15,6 @@ Simple to setup, easy to use, and has many useful features and commands.
 <img src="https://user-images.githubusercontent.com/20621396/184029894-6222e1ed-1536-42f0-bcf4-156a6ea3db06.png" alt="balance" width="284" ><br>
 <img src="https://user-images.githubusercontent.com/20621396/184029907-6df0e9af-a9aa-494c-9577-a4d57cfe5622.png" alt="battlepass" width="504" ><br>
 <img src="https://user-images.githubusercontent.com/20621396/186977298-d668c22c-ccfa-441a-82d9-f7430fe14e25.png" alt="collection" width="506" ><br>
-
 
 </details>
 
@@ -40,7 +38,6 @@ Feel free to join the [support server](https://discord.gg/yx5sPJxWth) for any he
   - Shop cache to prevent fetching the same user's shop twice
   - Used by large shop bots, highly scalable
   - Fully supports sharding (required for 2500+ servers)
-  
 
 ## Installation
 
@@ -54,13 +51,15 @@ Feel free to join the [support server](https://discord.gg/yx5sPJxWth) for any he
 ### Useful Information
 
 - The bot should automatically deploy the slash commands globally. If they don't appear:
+
   - If you're getting `DiscordAPIError: Missing Access`, you probably forgot to add the `applications.commands` scope in step 1
   - Discord global commands can take up to 1h to update due to caching. If you don't want to wait, send `@bot !deploy guild` in a text channel the bot can see (`@bot` being you @mentionning your bot). This will deploy the commands immediately in that guild.
   - If you see every command twice, just send `@bot !undeploy guild`!
 
-- By default, the bot doesn't store your username/password, it only uses them to get the cookies that can be used to generate access tokens needed to get your shop.  
+- By default, the bot doesn't store your username/password, it only uses them to get the cookies that can be used to generate access tokens needed to get your shop.
+
   - Your cookies are only stored on your hard drive, and are only ever sent to official Riot servers.
-  - You can log in using [your auth.riotgames.com cookies](https://github.com/giorgi-o/SkinPeek/wiki/How-to-get-your-Riot-cookies) using `/cookies` to avoid sending your password, and you can delete your account from the bot using `/forget`.  
+  - You can log in using [your auth.riotgames.com cookies](https://github.com/giorgi-o/SkinPeek/wiki/How-to-get-your-Riot-cookies) using `/cookies` to avoid sending your password, and you can delete your account from the bot using `/forget`.
   - Obviously, only log in if you trust whoever is hosting the bot, as they can theoretically do anything with your account.
 
 - Once you're more or less familiar with how the bot works, you should read the [Admin Guide](https://github.com/giorgi-o/SkinPeek/wiki/SkinPeek-Admin-Guide) for advanced usage and tips & tricks for hosting the bot.
@@ -73,7 +72,6 @@ Feel free to join the [support server](https://discord.gg/yx5sPJxWth) for any he
 Thanks to [Gam3rBoy57](https://replit.com/badge/github/Gam3rBoy57) for maintaining the Replit version!  
 **Note:** You will probably have to `/login` every day, and your alerts most likely won't work. Read more [here](https://github.com/giorgi-o/SkinPeek/pull/46#issuecomment-1213579690).
 
-
 ### Docker
 
 For advanced users who want to deploy the bot using [Docker](https://www.docker.com/):
@@ -83,25 +81,24 @@ For advanced users who want to deploy the bot using [Docker](https://www.docker.
 - Put your bot token in [config.json](https://github.com/giorgi-o/SkinPeek/blob/master/config.json.example)
 - Use `docker-compose up -d` to start the bot, `docker-compose logs -f` to see the logs and `docker-compose down` to stop it.
 - Send `!deploy guild` to deploy in the current guild or `!deploy global` to deploy the commands globally.
- 
 
 ## Future Improvements
 
-* ~~Auto check for new Valorant version~~
-* ~~View balance~~
-* ~~Auto fetch skin data on startup~~
-* ~~Skin notifier/reminder~~
-* ~~Show weapon rarity~~
-* ~~See current bundles~~
-* ~~See battlepass progress~~ (thanks muckelba!)
-* ~~Localization support~~
-* ~~Shop statistics~~
-* ~~Settings menu~~
-* ~~View other people's shops~~
-* ~~Show off your skin collection~~
-* Option to send shop automatically every day
-* Inspect weapon skin (all 4 levels + videos + radianite upgrade price)
-* Admin commands (delete user, see/edit everyone's alerts, etc.)
+- ~~Auto check for new Valorant version~~
+- ~~View balance~~
+- ~~Auto fetch skin data on startup~~
+- ~~Skin notifier/reminder~~
+- ~~Show weapon rarity~~
+- ~~See current bundles~~
+- ~~See battlepass progress~~ (thanks muckelba!)
+- ~~Localization support~~
+- ~~Shop statistics~~
+- ~~Settings menu~~
+- ~~View other people's shops~~
+- ~~Show off your skin collection~~
+- Option to send shop automatically every day
+- Inspect weapon skin (all 4 levels + videos + radianite upgrade price)
+- Admin commands (delete user, see/edit everyone's alerts, etc.)
 
 ## Acknowledgements
 

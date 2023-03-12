@@ -1,6 +1,6 @@
 {
   "translation_by": "Wesley Nascimento (ZeusMode)",
-  "error":{
+  "error": {
     "NOT_REGISTERED": "**Você não está registrado com o bot!** Tente `/login`.",
     "INVALID_PASSWORD": "username ou password inválidos!",
     "INVALID_COOKIES": "Ooops, isso não funcionou! Seus cookies estão formatados corretamente?",
@@ -21,8 +21,8 @@
     "UNKNOWN_ITEM_TYPE": "**Tipo do item desconhecido!** `{t}`",
     "MAINTENANCE": "**Servidores do valorante estão em manutenção no momento!** Tente novamente mais tarde.",
     "STATS_DISABLED": "**Shop statistics are currently disabled for this bot!**",
-    "EMPTY_STATS":  "**I have no shop stats to display!** use `/shop` to get started.",
-    "NO_STATS_FOR_SKIN":  "**That skin hasn't been in anyone's shop** in the past {d} days!",
+    "EMPTY_STATS": "**I have no shop stats to display!** use `/shop` to get started.",
+    "NO_STATS_FOR_SKIN": "**That skin hasn't been in anyone's shop** in the past {d} days!",
     "NOT_UR_MESSAGE_STATS": "**That's not your message!** Use `/stats` to browse skin stats.",
     "NOT_UR_MESSAGE_BUNDLE": "**Esta não é sua mensagem!** Use `/bundle` para procurar por pacotes.",
     "NOT_UR_MESSAGE_ALERT": "**Esta não é sua mensagem!** Use `/alert` para setar seu próprio alerta.",
@@ -34,7 +34,7 @@
     "NO_NMARKET": "**Não existe mercado noturno atualmente!**",
     "GENERIC_ERROR": ":no_entry_sign: **Aconteceu um erro tentando isso!** Culpa da Riot.\n`{e}`"
   },
-  "info":{
+  "info": {
     "SHOP_HEADER": "Loja de hoje do **{u}** (nova loja <t:{t}:R>)",
     "BUNDLE_HEADER": "Pacote em destaque: **{b}**",
     "BUNDLES_HEADER": "Pacotes em desque:",

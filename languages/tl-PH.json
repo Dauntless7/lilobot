@@ -1,5 +1,6 @@
-{ "translation_by": "Astro",
-  "error":{
+{
+  "translation_by": "Astro",
+  "error": {
     "NOT_REGISTERED": "**Hindi ka naka-register sa bot!** Subukan ang `/login`.",
     "INVALID_PASSWORD": "Maling username o password!",
     "INVALID_COOKIES": "Ay! Hindi yan gumana! Tama ba ang formatting ng cookies mo?",
@@ -29,7 +30,7 @@
     "NO_NMARKET": "**Walang Night Market ngayon!**",
     "GENERIC_ERROR": ":no_entry_sign: **Nagkaroon ng error habang ginawa ito!** Kasalanan ng Riot to'.\n`{e}`"
   },
-  "info":{
+  "info": {
     "SHOP_HEADER": "Daily shop ni **{u}** (new shop <t:{t}:R>)",
     "BUNDLE_HEADER": "Featured bundle: **{b}**",
     "BUNDLES_HEADER": "Currently featured bundles:",

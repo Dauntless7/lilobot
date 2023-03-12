@@ -1,14 +1,18 @@
-import {ShardingManager} from "discord.js";
-import {loadConfig} from "./misc/config.js";
+import { ShardingManager } from 'discord.js';
+import { loadConfig } from './misc/config.js';
 
 const config = loadConfig();
 
 const manager = new ShardingManager('./SkinPeek.js', {
-    token: config.token
+  token: config.token
 });
 
-manager.spawn({
+manager
+  .spawn({
     timeout: config.shardReadyTimeout
-}).then(() => {
-    manager.broadcastEval((client) => client.skinPeekShardMessageReceived({type: "shardsReady"}));
-});
+  })
+  .then(() => {
+    manager.broadcastEval((client) =>
+      client.skinPeekShardMessageReceived({ type: 'shardsReady' })
+    );
+  });

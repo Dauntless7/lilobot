@@ -1,7 +1,7 @@
-import {loadConfig} from "./misc/config.js";
-import {startBot} from "./discord/bot.js";
-import {loadLogger} from "./misc/logger.js";
-import {transferUserDataFromOldUsersJson} from "./valorant/auth.js";
+import { loadConfig } from './misc/config.js';
+import { startBot } from './discord/bot.js';
+import { loadLogger } from './misc/logger.js';
+import { transferUserDataFromOldUsersJson } from './valorant/auth.js';
 
 /* TODO list:
  * (done) Balance
@@ -18,8 +18,8 @@ import {transferUserDataFromOldUsersJson} from "./valorant/auth.js";
  */
 
 const config = loadConfig();
-if(config) {
-    loadLogger();
-    transferUserDataFromOldUsersJson();
-    startBot();
+if (config) {
+  loadLogger();
+  transferUserDataFromOldUsersJson();
+  startBot();
 }

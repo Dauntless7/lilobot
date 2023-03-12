@@ -1,308 +1,370 @@
-import {rarityEmoji} from "../discord/emoji.js";
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField} from "discord.js";
-import {getItem, getRarity} from "../valorant/cache.js";
+import { rarityEmoji } from '../discord/emoji.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  PermissionsBitField
+} from 'discord.js';
+import { getItem, getRarity } from '../valorant/cache.js';
 
-import https from "https";
-import fs from "fs";
-import {DEFAULT_LANG, l, valToDiscLang} from "./languages.js";
-import {client} from "../discord/bot.js";
-import {getUser} from "../valorant/auth.js";
-import config from "./config.js";
+import https from 'https';
+import fs from 'fs';
+import { DEFAULT_LANG, l, valToDiscLang } from './languages.js';
+import { client } from '../discord/bot.js';
+import { getUser } from '../valorant/auth.js';
+import config from './config.js';
 
 const tlsCiphers = [
-    'TLS_CHACHA20_POLY1305_SHA256',
-    'TLS_AES_128_GCM_SHA256',
-    'TLS_AES_256_GCM_SHA384',
-    'ECDHE-ECDSA-CHACHA20-POLY1305',
-    'ECDHE-RSA-CHACHA20-POLY1305',
-    'ECDHE-ECDSA-AES128-SHA256',
-    'ECDHE-RSA-AES128-SHA256',
-    'ECDHE-ECDSA-AES256-GCM-SHA384',
-    'ECDHE-RSA-AES256-GCM-SHA384',
-    'ECDHE-ECDSA-AES128-SHA',
-    'ECDHE-RSA-AES128-SHA',
-    'ECDHE-ECDSA-AES256-SHA',
-    'ECDHE-RSA-AES256-SHA',
-    'RSA-PSK-AES128-GCM-SHA256',
-    'RSA-PSK-AES256-GCM-SHA384',
-    'RSA-PSK-AES128-CBC-SHA',
-    'RSA-PSK-AES256-CBC-SHA',
+  'TLS_CHACHA20_POLY1305_SHA256',
+  'TLS_AES_128_GCM_SHA256',
+  'TLS_AES_256_GCM_SHA384',
+  'ECDHE-ECDSA-CHACHA20-POLY1305',
+  'ECDHE-RSA-CHACHA20-POLY1305',
+  'ECDHE-ECDSA-AES128-SHA256',
+  'ECDHE-RSA-AES128-SHA256',
+  'ECDHE-ECDSA-AES256-GCM-SHA384',
+  'ECDHE-RSA-AES256-GCM-SHA384',
+  'ECDHE-ECDSA-AES128-SHA',
+  'ECDHE-RSA-AES128-SHA',
+  'ECDHE-ECDSA-AES256-SHA',
+  'ECDHE-RSA-AES256-SHA',
+  'RSA-PSK-AES128-GCM-SHA256',
+  'RSA-PSK-AES256-GCM-SHA384',
+  'RSA-PSK-AES128-CBC-SHA',
+  'RSA-PSK-AES256-CBC-SHA'
 ];
 
 const tlsSigAlgs = [
-    'ecdsa_secp256r1_sha256',
-    'rsa_pss_rsae_sha256',
-    'rsa_pkcs1_sha256',
-    'ecdsa_secp384r1_sha384',
-    'rsa_pss_rsae_sha384',
-    'rsa_pkcs1_sha384',
-    'rsa_pss_rsae_sha512',
-    'rsa_pkcs1_sha512',
-    'rsa_pkcs1_sha1',
-]
+  'ecdsa_secp256r1_sha256',
+  'rsa_pss_rsae_sha256',
+  'rsa_pkcs1_sha256',
+  'ecdsa_secp384r1_sha384',
+  'rsa_pss_rsae_sha384',
+  'rsa_pkcs1_sha384',
+  'rsa_pss_rsae_sha512',
+  'rsa_pkcs1_sha512',
+  'rsa_pkcs1_sha1'
+];
 
 // all my homies hate node-fetch
-export const fetch = (url, options={}) => {
-    if(config.logUrls) console.log("Fetching url " + url.substring(0, 200) + (url.length > 200 ? "..." : ""));
-    return new Promise((resolve, reject) => {
-        const req = https.request(url, {
-            method: options.method || "GET",
-            headers: {
-                cookie: "dummy=cookie", // set dummy cookie, helps with cloudflare 1020
-                "Accept-Language": "en-US,en;q=0.5", // same as above
-                ...options.headers
-            },
-            ciphers: tlsCiphers.join(':'),
-            sigalgs: tlsSigAlgs.join(':'),
-            minVersion: "TLSv1.3"
-        }, resp => {
-            const res = {
-                statusCode: resp.statusCode,
-                headers: resp.headers
-            };
-            let chunks = [];
-            resp.on('data', (chunk) => chunks.push(chunk));
-            resp.on('end', () => {
-                res.body = Buffer.concat(chunks).toString(options.encoding || "utf8");
-                resolve(res);
-            });
-            resp.on('error', err => {
-                console.error(err);
-                reject(err);
-            });
+export const fetch = (url, options = {}) => {
+  if (config.logUrls)
+    console.log(
+      'Fetching url ' + url.substring(0, 200) + (url.length > 200 ? '...' : '')
+    );
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      url,
+      {
+        method: options.method || 'GET',
+        headers: {
+          cookie: 'dummy=cookie', // set dummy cookie, helps with cloudflare 1020
+          'Accept-Language': 'en-US,en;q=0.5', // same as above
+          ...options.headers
+        },
+        ciphers: tlsCiphers.join(':'),
+        sigalgs: tlsSigAlgs.join(':'),
+        minVersion: 'TLSv1.3'
+      },
+      (resp) => {
+        const res = {
+          statusCode: resp.statusCode,
+          headers: resp.headers
+        };
+        let chunks = [];
+        resp.on('data', (chunk) => chunks.push(chunk));
+        resp.on('end', () => {
+          res.body = Buffer.concat(chunks).toString(options.encoding || 'utf8');
+          resolve(res);
         });
-        req.write(options.body || "");
-        req.end();
-        req.on('error', err => {
-            console.error(err);
-            reject(err);
+        resp.on('error', (err) => {
+          console.error(err);
+          reject(err);
         });
+      }
+    );
+    req.write(options.body || '');
+    req.end();
+    req.on('error', (err) => {
+      console.error(err);
+      reject(err);
     });
-}
+  });
+};
 
 // file utils
 
 export const asyncReadFile = (path) => {
-    return new Promise(((resolve, reject) => {
-        fs.readFile(path, (err, data) => {
-            if(err) reject(err);
-            else resolve(data);
-        })
-    }));
-}
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+};
 
 export const asyncReadJSONFile = async (path) => {
-    return JSON.parse((await asyncReadFile(path)).toString());
-}
+  return JSON.parse((await asyncReadFile(path)).toString());
+};
 
 // riot utils
 
 export const itemTypes = {
-    SKIN: "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
-    BUDDY: "dd3bf334-87f3-40bd-b043-682a57a8dc3a",
-    SPRAY: "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475",
-    CARD: "3f296c07-64c3-494c-923b-fe692a4fa1bd",
-    TITLE: "de7caa6b-adf7-4588-bbd1-143831e786c6"
-}
+  SKIN: 'e7c63390-eda7-46e0-bb7a-a6abdacd2433',
+  BUDDY: 'dd3bf334-87f3-40bd-b043-682a57a8dc3a',
+  SPRAY: 'd5f120f8-ff8c-4aac-92ea-f2b5acbe9475',
+  CARD: '3f296c07-64c3-494c-923b-fe692a4fa1bd',
+  TITLE: 'de7caa6b-adf7-4588-bbd1-143831e786c6'
+};
 
 export const parseSetCookie = (setCookie) => {
-    if(!setCookie) {
-        console.error("Riot didn't return any cookies during the auth request! Cloudflare might have something to do with it...");
-        return {};
-    }
+  if (!setCookie) {
+    console.error(
+      "Riot didn't return any cookies during the auth request! Cloudflare might have something to do with it..."
+    );
+    return {};
+  }
 
-    const cookies = {};
-    for(const cookie of setCookie) {
-        const sep = cookie.indexOf("=");
-        cookies[cookie.slice(0, sep)] = cookie.slice(sep + 1, cookie.indexOf(';'));
-    }
-    return cookies;
-}
+  const cookies = {};
+  for (const cookie of setCookie) {
+    const sep = cookie.indexOf('=');
+    cookies[cookie.slice(0, sep)] = cookie.slice(sep + 1, cookie.indexOf(';'));
+  }
+  return cookies;
+};
 
 export const stringifyCookies = (cookies) => {
-    const cookieList = [];
-    for (let [key, value] of Object.entries(cookies)) {
-        cookieList.push(key + "=" + value);
-    }
-    return cookieList.join("; ");
-}
+  const cookieList = [];
+  for (let [key, value] of Object.entries(cookies)) {
+    cookieList.push(key + '=' + value);
+  }
+  return cookieList.join('; ');
+};
 
 export const extractTokensFromUri = (uri) => {
-    // thx hamper for regex
-    const match = uri.match(/access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/);
-    if(!match) return [null, null];
+  // thx hamper for regex
+  const match = uri.match(
+    /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
+  );
+  if (!match) return [null, null];
 
-    const [, accessToken, idToken] = match;
-    return [accessToken, idToken]
-}
+  const [, accessToken, idToken] = match;
+  return [accessToken, idToken];
+};
 
 export const decodeToken = (token) => {
-    const encodedPayload = token.split('.')[1];
-    return JSON.parse(atob(encodedPayload));
-}
+  const encodedPayload = token.split('.')[1];
+  return JSON.parse(atob(encodedPayload));
+};
 
 export const tokenExpiry = (token) => {
-    return decodeToken(token).exp * 1000;
-}
+  return decodeToken(token).exp * 1000;
+};
 
-export const userRegion = ({region}) => {
-    if(!region || region === "latam" || region === "br") return "na";
-    return region;
-}
+export const userRegion = ({ region }) => {
+  if (!region || region === 'latam' || region === 'br') return 'na';
+  return region;
+};
 
 export const isMaintenance = (json) => {
-    return json.httpStatus === 403 && json.errorCode === "SCHEDULED_DOWNTIME";
-}
+  return json.httpStatus === 403 && json.errorCode === 'SCHEDULED_DOWNTIME';
+};
 
 export const formatBundle = async (rawBundle) => {
-    const bundle = {
-        uuid: rawBundle.DataAssetID,
-        expires: Math.floor(Date.now() / 1000) + rawBundle.DurationRemainingInSeconds,
-        items: []
-    }
+  const bundle = {
+    uuid: rawBundle.DataAssetID,
+    expires:
+      Math.floor(Date.now() / 1000) + rawBundle.DurationRemainingInSeconds,
+    items: []
+  };
 
-    let price = 0;
-    let basePrice = 0;
-    for(const rawItem of rawBundle.Items) {
-        const item = {
-            uuid: rawItem.Item.ItemID,
-            type: rawItem.Item.ItemTypeID,
-            item: await getItem(rawItem.Item.ItemID, rawItem.Item.ItemTypeID),
-            amount: rawItem.Item.Amount,
-            price: rawItem.DiscountedPrice,
-            basePrice: rawItem.BasePrice,
-            discount: rawItem.DiscountPercent
-        }
+  let price = 0;
+  let basePrice = 0;
+  for (const rawItem of rawBundle.Items) {
+    const item = {
+      uuid: rawItem.Item.ItemID,
+      type: rawItem.Item.ItemTypeID,
+      item: await getItem(rawItem.Item.ItemID, rawItem.Item.ItemTypeID),
+      amount: rawItem.Item.Amount,
+      price: rawItem.DiscountedPrice,
+      basePrice: rawItem.BasePrice,
+      discount: rawItem.DiscountPercent
+    };
 
-        price += item.price;
-        basePrice += item.basePrice;
+    price += item.price;
+    basePrice += item.basePrice;
 
-        bundle.items.push(item);
-    }
+    bundle.items.push(item);
+  }
 
-    bundle.price = price;
-    bundle.basePrice = basePrice;
+  bundle.price = price;
+  bundle.basePrice = basePrice;
 
-    return bundle;
-}
+  return bundle;
+};
 
 export const fetchMaintenances = async (region) => {
-    const req = await fetch(`https://valorant.secure.dyn.riotcdn.net/channels/public/x/status/${region}.json`);
-    return JSON.parse(req.body);
-}
+  const req = await fetch(
+    `https://valorant.secure.dyn.riotcdn.net/channels/public/x/status/${region}.json`
+  );
+  return JSON.parse(req.body);
+};
 
 export const formatNightMarket = (rawNightMarket) => {
-    if(!rawNightMarket) return null;
+  if (!rawNightMarket) return null;
 
-    return {
-        offers: rawNightMarket.BonusStoreOffers.map(offer => {return {
-            uuid: offer.Offer.OfferID,
-            realPrice: offer.Offer.Cost["85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741"],
-            nmPrice: offer.DiscountCosts["85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741"],
-            percent: offer.DiscountPercent
-        }}),
-        expires: Math.floor(Date.now() / 1000) + rawNightMarket.BonusStoreRemainingDurationInSeconds
-    }
-}
+  return {
+    offers: rawNightMarket.BonusStoreOffers.map((offer) => {
+      return {
+        uuid: offer.Offer.OfferID,
+        realPrice: offer.Offer.Cost['85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'],
+        nmPrice: offer.DiscountCosts['85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'],
+        percent: offer.DiscountPercent
+      };
+    }),
+    expires:
+      Math.floor(Date.now() / 1000) +
+      rawNightMarket.BonusStoreRemainingDurationInSeconds
+  };
+};
 
 export const removeDupeAlerts = (alerts) => {
-    const uuids = [];
-    return alerts.filter(alert => {
-        if(uuids.includes(alert.uuid)) return false;
-        return uuids.push(alert.uuid);
-    });
-}
+  const uuids = [];
+  return alerts.filter((alert) => {
+    if (uuids.includes(alert.uuid)) return false;
+    return uuids.push(alert.uuid);
+  });
+};
 
-export const getPuuid = (id, account=null) => {
-    return getUser(id, account).puuid;
-}
+export const getPuuid = (id, account = null) => {
+  return getUser(id, account).puuid;
+};
 
 // discord utils
 
-export const defer = async (interaction, ephemeral=false) => {
-    // discord only sets deferred to true once the event is sent over ws, which doesn't happen immediately
-    await interaction.deferReply({ephemeral});
-    interaction.deferred = true;
-}
+export const defer = async (interaction, ephemeral = false) => {
+  // discord only sets deferred to true once the event is sent over ws, which doesn't happen immediately
+  await interaction.deferReply({ ephemeral });
+  interaction.deferred = true;
+};
 
-export const skinNameAndEmoji = async (skin, channel, localeOrInteraction=DEFAULT_LANG) => {
-    const name = l(skin.names, localeOrInteraction);
-    if(!skin.rarity) return name;
+export const skinNameAndEmoji = async (
+  skin,
+  channel,
+  localeOrInteraction = DEFAULT_LANG
+) => {
+  const name = l(skin.names, localeOrInteraction);
+  if (!skin.rarity) return name;
 
-    const rarity = await getRarity(skin.rarity, channel);
-    if(!rarity) return name;
+  const rarity = await getRarity(skin.rarity, channel);
+  if (!rarity) return name;
 
-    const rarityIcon = await rarityEmoji(channel, rarity.name, rarity.icon);
-    return rarityIcon ? `${rarityIcon} ${name}` : name;
-}
+  const rarityIcon = await rarityEmoji(channel, rarity.name, rarity.icon);
+  return rarityIcon ? `${rarityIcon} ${name}` : name;
+};
 
-export const actionRow = (button) => new ActionRowBuilder().addComponents(button);
+export const actionRow = (button) =>
+  new ActionRowBuilder().addComponents(button);
 
-export const removeAlertButton = (id, uuid, buttonText) => new ButtonBuilder().setCustomId(`removealert/${uuid}/${id}/${Math.round(Math.random() * 100000)}`).setStyle(ButtonStyle.Danger).setLabel(buttonText).setEmoji("✖");
-export const removeAlertActionRow = (id, uuid, buttonText) => new ActionRowBuilder().addComponents(removeAlertButton(id, uuid, buttonText));
+export const removeAlertButton = (id, uuid, buttonText) =>
+  new ButtonBuilder()
+    .setCustomId(
+      `removealert/${uuid}/${id}/${Math.round(Math.random() * 100000)}`
+    )
+    .setStyle(ButtonStyle.Danger)
+    .setLabel(buttonText)
+    .setEmoji('✖');
+export const removeAlertActionRow = (id, uuid, buttonText) =>
+  new ActionRowBuilder().addComponents(removeAlertButton(id, uuid, buttonText));
 
-export const retryAuthButton = (id, operationId, buttonText) => new ButtonBuilder().setCustomId(`retry_auth/${operationId}`).setStyle(ButtonStyle.Danger).setLabel(buttonText).setEmoji("🔄");
+export const retryAuthButton = (id, operationId, buttonText) =>
+  new ButtonBuilder()
+    .setCustomId(`retry_auth/${operationId}`)
+    .setStyle(ButtonStyle.Danger)
+    .setLabel(buttonText)
+    .setEmoji('🔄');
 
-export const externalEmojisAllowed = (channel) => !channel || !channel.guild || channel.permissionsFor(channel.guild.roles.everyone).has(PermissionsBitField.Flags.UseExternalEmojis);
-export const canCreateEmojis = (guild) => guild && guild.members.me && guild.members.me.permissions.has(PermissionsBitField.Flags.ManageEmojisAndStickers);
+export const externalEmojisAllowed = (channel) =>
+  !channel ||
+  !channel.guild ||
+  channel
+    .permissionsFor(channel.guild.roles.everyone)
+    .has(PermissionsBitField.Flags.UseExternalEmojis);
+export const canCreateEmojis = (guild) =>
+  guild &&
+  guild.members.me &&
+  guild.members.me.permissions.has(
+    PermissionsBitField.Flags.ManageEmojisAndStickers
+  );
 export const emojiToString = (emoji) => emoji && `<:${emoji.name}:${emoji.id}>`;
 
 export const canSendMessages = (channel) => {
-    if(!channel || !channel.guild) return true;
-    const permissions = channel.permissionsFor(channel.guild.members.me);
-    return permissions.has(PermissionsBitField.Flags.ViewChannel) && permissions.has(PermissionsBitField.Flags.SendMessages) && permissions.has(PermissionsBitField.Flags.EmbedLinks);
-}
+  if (!channel || !channel.guild) return true;
+  const permissions = channel.permissionsFor(channel.guild.members.me);
+  return (
+    permissions.has(PermissionsBitField.Flags.ViewChannel) &&
+    permissions.has(PermissionsBitField.Flags.SendMessages) &&
+    permissions.has(PermissionsBitField.Flags.EmbedLinks)
+  );
+};
 
 export const fetchChannel = async (channelId) => {
-    try {
-        return await client.channels.fetch(channelId);
-    } catch(e) {
-        return null;
-    }
-}
+  try {
+    return await client.channels.fetch(channelId);
+  } catch (e) {
+    return null;
+  }
+};
 
 export const getChannelGuildId = async (channelId) => {
-    if(client.shard) {
-        const f = client => {
-            const channel = client.channels.get(channelId);
-            if(channel) return channel.guildId;
-        };
-        const results = await client.shard.broadcastEval(f);
-        return results.find(result => result);
-    } else {
-        const channel = client.channels.cache.get(channelId);
-        return channel && channel.guildId;
-    }
-}
+  if (client.shard) {
+    const f = (client) => {
+      const channel = client.channels.get(channelId);
+      if (channel) return channel.guildId;
+    };
+    const results = await client.shard.broadcastEval(f);
+    return results.find((result) => result);
+  } else {
+    const channel = client.channels.cache.get(channelId);
+    return channel && channel.guildId;
+  }
+};
 
 export const valNamesToDiscordNames = (names) => {
-    const obj = {};
-    for(const [valLang, name] of Object.entries(names)) {
-        if(valToDiscLang[valLang]) obj[valToDiscLang[valLang]] = name;
-    }
-    return obj;
-}
+  const obj = {};
+  for (const [valLang, name] of Object.entries(names)) {
+    if (valToDiscLang[valLang]) obj[valToDiscLang[valLang]] = name;
+  }
+  return obj;
+};
 
-export const canEditInteraction = (interaction) => Date.now() - interaction.createdTimestamp < 14.8 * 60 * 1000;
+export const canEditInteraction = (interaction) =>
+  Date.now() - interaction.createdTimestamp < 14.8 * 60 * 1000;
 
-export const discordTag = id => {
-    const user = client.users.cache.get(id);
-    return user ? `${user.username}#${user.discriminator}` : id;
-}
+export const discordTag = (id) => {
+  const user = client.users.cache.get(id);
+  return user ? `${user.username}#${user.discriminator}` : id;
+};
 
 // misc utils
 
-export const wait = ms => new Promise(r => setTimeout(r, ms));
+export const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export const isToday = (timestamp) => isSameDay(timestamp, Date.now());
 export const isSameDay = (t1, t2) => {
-    t1 = new Date(t1); t2 = new Date(t2);
-    return t1.getUTCFullYear() === t2.getUTCFullYear() && t1.getUTCMonth() === t2.getUTCMonth() && t1.getUTCDate() === t2.getUTCDate();
-}
+  t1 = new Date(t1);
+  t2 = new Date(t2);
+  return (
+    t1.getUTCFullYear() === t2.getUTCFullYear() &&
+    t1.getUTCMonth() === t2.getUTCMonth() &&
+    t1.getUTCDate() === t2.getUTCDate()
+  );
+};
 
 export const ensureUsersFolder = () => {
-    if(!fs.existsSync("data")) fs.mkdirSync("data");
-    if(!fs.existsSync("data/users")) fs.mkdirSync("data/users");
-}
+  if (!fs.existsSync('data')) fs.mkdirSync('data');
+  if (!fs.existsSync('data/users')) fs.mkdirSync('data/users');
+};
 
-export const findKeyOfValue = (obj, value) => Object.keys(obj).find(key => obj[key] === value);
+export const findKeyOfValue = (obj, value) =>
+  Object.keys(obj).find((key) => obj[key] === value);
