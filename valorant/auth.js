@@ -5,7 +5,8 @@ import {
   extractTokensFromUri,
   tokenExpiry,
   decodeToken,
-  ensureUsersFolder
+  ensureUsersFolder,
+  encryptPassword
 } from '../misc/util.js';
 import config from '../misc/config.js';
 import fs from 'fs';
@@ -210,7 +211,7 @@ export const redeemUsernamePassword = async (id, login, password) => {
 
     if (config.storePasswords) {
       user.auth.login = login;
-      user.auth.password = btoa(password);
+      user.auth.password = encryptPassword(password);
     }
 
     addUser(user);

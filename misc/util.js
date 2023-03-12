@@ -1,14 +1,14 @@
-import { rarityEmoji } from '../discord/emoji.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   PermissionsBitField
 } from 'discord.js';
-import { getItem, getRarity } from '../valorant/cache.js';
-
 import https from 'https';
 import fs from 'fs';
+import crypto from 'crypto';
+import { rarityEmoji } from '../discord/emoji.js';
+import { getItem, getRarity } from '../valorant/cache.js';
 import { DEFAULT_LANG, l, valToDiscLang } from './languages.js';
 import { client } from '../discord/bot.js';
 import { getUser } from '../valorant/auth.js';
@@ -107,6 +107,14 @@ export const asyncReadJSONFile = async (path) => {
   return JSON.parse((await asyncReadFile(path)).toString());
 };
 
+export const encryptPassword = (password) => {
+  const key = crypto.randomBytes(32);
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  let encrypted = cipher.update(password);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+};
 // riot utils
 
 export const itemTypes = {
