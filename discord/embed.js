@@ -1031,10 +1031,10 @@ export const switchAccountButtons = (
     const button = buttons[i];
 
     // Add button to current action row
-    currentActionRow.addComponent(button);
+    currentActionRow.addComponents(button);
 
     // If we've reached the max number of buttons per row, create a new action row
-    if (currentActionRow.getComponents().length === MAX_BUTTONS_PER_ROW) {
+    if (currentActionRow.components.length === MAX_BUTTONS_PER_ROW) {
       actionRows.push(currentActionRow);
       currentActionRow = new ActionRowBuilder();
       actionRowCount++;
@@ -1047,7 +1047,7 @@ export const switchAccountButtons = (
   }
 
   // If there are any remaining buttons, add them to a new action row
-  if (currentActionRow.getComponents().length > 0) {
+  if (currentActionRow.components.length > 0) {
     actionRows.push(currentActionRow);
   }
 

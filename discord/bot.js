@@ -464,9 +464,7 @@ client.on('messageCreate', async (message) => {
           break;
         }
       }
-    if (!isAdmin) {
-      return console.log(`${msg.author.tag} tried to run an admin command`);
-    }
+    if (!isAdmin) return;
 
     const content = message.content.replace(
       new RegExp(`<@!?${client.user.id}+> ?`),
