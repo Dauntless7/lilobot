@@ -394,7 +394,7 @@ export const fetchAlerts = async (interaction) => {
     interaction.channel || (await fetchChannel(interaction.channelId));
   const emojiString = await VPEmoji(interaction, channel);
 
-  return await alertsPageEmbed(
+  return alertsPageEmbed(
     interaction,
     await filteredAlertsForUser(interaction),
     0,

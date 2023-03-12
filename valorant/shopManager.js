@@ -42,13 +42,7 @@ export const fetchShop = async (
   if (shop.inQueue) shop = await waitForShopQueueResponse(shop);
 
   user = getUser(user);
-  return await renderOffers(
-    shop,
-    interaction,
-    user,
-    await emojiPromise,
-    targetId
-  );
+  return renderOffers(shop, interaction, user, await emojiPromise, targetId);
 };
 
 export const fetchBundles = async (interaction) => {
@@ -59,7 +53,7 @@ export const fetchBundles = async (interaction) => {
   let bundles = await queueBundles(interaction.user.id);
   if (bundles.inQueue) bundles = await waitForShopQueueResponse(bundles);
 
-  return await renderBundles(bundles, interaction, await emojiPromise);
+  return renderBundles(bundles, interaction, await emojiPromise);
 };
 
 export const fetchNightMarket = async (interaction, user) => {
@@ -70,7 +64,7 @@ export const fetchNightMarket = async (interaction, user) => {
   let market = await queueNightMarket(interaction.user.id);
   if (market.inQueue) market = await waitForShopQueueResponse(market);
 
-  return await renderNightMarket(market, interaction, user, await emojiPromise);
+  return renderNightMarket(market, interaction, user, await emojiPromise);
 };
 
 export const fetchRawShop = async (id, account = null) => {

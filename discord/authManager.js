@@ -155,7 +155,7 @@ export const login2FA = async (interaction, code, operationIndex = null) => {
 export const retryFailedOperation = async (interaction, index) => {
   const operation = failedOperations.find((o) => o.c === index);
   if (!operation)
-    return await interaction.followUp({
+    return interaction.followUp({
       embeds: [basicEmbed(s(interaction).error.AUTH_ERROR_RETRY_EXPIRED)],
       ephemeral: true
     });

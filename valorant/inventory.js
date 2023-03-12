@@ -152,7 +152,7 @@ export const renderCollection = async (
 ) => {
   const user = getUser(targetId);
   if (!user)
-    return await interaction.reply({
+    return interaction.reply({
       embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)]
     });
 
@@ -168,5 +168,5 @@ export const renderCollection = async (
     return authFailureMessage(interaction, loadout, errorText);
   }
 
-  return await skinCollectionSingleEmbed(interaction, targetId, user, loadout);
+  return skinCollectionSingleEmbed(interaction, targetId, user, loadout);
 };

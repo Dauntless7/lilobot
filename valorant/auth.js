@@ -118,7 +118,7 @@ export const authUser = async (id, account = null) => {
   const rsoExpiry = tokenExpiry(user.auth.rso);
   if (rsoExpiry - Date.now() > 10_000) return { success: true };
 
-  return await refreshToken(id, account);
+  return refreshToken(id, account);
 };
 
 export const redeemUsernamePassword = async (id, login, password) => {

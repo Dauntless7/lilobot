@@ -149,6 +149,8 @@ export const stringifyCookies = (cookies) => {
   return cookieList.join('; ');
 };
 
+export const isNumberBetween = (min, max, val) => val >= min && val <= max;
+
 export const extractTokensFromUri = (uri) => {
   // thx hamper for regex
   const match = uri.match(
@@ -318,7 +320,7 @@ export const canSendMessages = (channel) => {
 
 export const fetchChannel = async (channelId) => {
   try {
-    return await client.channels.fetch(channelId);
+    return client.channels.fetch(channelId);
   } catch (e) {
     return null;
   }

@@ -604,15 +604,15 @@ export const fetchBattlepassInfo = async (gameVersion) => {
 export const getItem = async (uuid, type) => {
   switch (type) {
     case itemTypes.SKIN:
-      return await getSkin(uuid);
+      return getSkin(uuid);
     case itemTypes.BUDDY:
-      return await getBuddy(uuid);
+      return getBuddy(uuid);
     case itemTypes.CARD:
-      return await getCard(uuid);
+      return getCard(uuid);
     case itemTypes.SPRAY:
-      return await getSpray(uuid);
+      return getSpray(uuid);
     case itemTypes.TITLE:
-      return await getTitle(uuid);
+      return getTitle(uuid);
   }
 };
 
@@ -667,7 +667,7 @@ export const getRarity = async (uuid) => {
 };
 
 export const getAllSkins = async () => {
-  return await Promise.all(
+  return Promise.all(
     Object.values(skins)
       .filter((o) => typeof o === 'object')
       .map((skin) => getSkin(skin.uuid, false))

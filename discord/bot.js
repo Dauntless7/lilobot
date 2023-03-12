@@ -464,7 +464,9 @@ client.on('messageCreate', async (message) => {
           break;
         }
       }
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      return console.log(`${msg.author.tag} tried to run an admin command`);
+    }
 
     const content = message.content.replace(
       new RegExp(`<@!?${client.user.id}+> ?`),
@@ -574,7 +576,7 @@ client.on('messageCreate', async (message) => {
             config[target] = value.toLowerCase().startsWith('t');
             break;
           default:
-            return await message.reply(
+            return message.reply(
               "[Error] I don't know what type the config is in, so I can't convert it!"
             );
         }
@@ -713,10 +715,10 @@ client.on('interactionCreate', async (interaction) => {
       'The bot is still starting up! Please wait a few seconds and try again. (Shards loading...)';
   if (maintenanceMessage) {
     if (interaction.isAutocomplete())
-      return await interaction.respond([
+      return interaction.respond([
         { name: maintenanceMessage, value: maintenanceMessage }
       ]);
-    return await interaction.reply({
+    return interaction.reply({
       content: maintenanceMessage,
       ephemeral: true
     });
@@ -738,12 +740,12 @@ client.on('interactionCreate', async (interaction) => {
           if (otherUser && otherUser.id !== interaction.user.id) {
             const otherValorantUser = getUser(otherUser.id);
             if (!otherValorantUser)
-              return await interaction.reply({
+              return interaction.reply({
                 embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED_OTHER)]
               });
 
             if (!getSetting(otherUser.id, 'othersCanViewShop'))
-              return await interaction.reply({
+              return interaction.reply({
                 embeds: [
                   basicEmbed(
                     s(interaction).error.OTHER_SHOP_DISABLED.f({
@@ -755,7 +757,7 @@ client.on('interactionCreate', async (interaction) => {
 
             targetUser = otherUser;
           } else if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -775,7 +777,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'bundles': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -815,7 +817,7 @@ client.on('interactionCreate', async (interaction) => {
             ).length === 1;
 
           if (searchResults.length === 0) {
-            return await interaction.followUp({
+            return interaction.followUp({
               embeds: [basicEmbed(s(interaction).error.BUNDLE_NOT_FOUND)],
               ephemeral: true
             });
@@ -828,7 +830,7 @@ client.on('interactionCreate', async (interaction) => {
             const bundle = searchResults[0].obj;
             const message = await renderBundle(bundle, interaction, emoji);
 
-            return await interaction.followUp(message);
+            return interaction.followUp(message);
           } else {
             const row = new ActionRowBuilder();
 
@@ -868,7 +870,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'nightmarket': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -896,7 +898,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'balance': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -911,7 +913,7 @@ client.on('interactionCreate', async (interaction) => {
           const balance = await getBalance(interaction.user.id);
 
           if (!balance.success)
-            return await interaction.followUp(
+            return interaction.followUp(
               authFailureMessage(
                 interaction,
                 balance,
@@ -952,7 +954,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'alert': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -960,7 +962,7 @@ client.on('interactionCreate', async (interaction) => {
           const channel =
             interaction.channel || (await fetchChannel(interaction.channelId));
           if (!canSendMessages(channel))
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.ALERT_NO_PERMS)]
             });
 
@@ -968,7 +970,7 @@ client.on('interactionCreate', async (interaction) => {
 
           const auth = await authUser(interaction.user.id);
           if (!auth.success)
-            return await interaction.followUp(
+            return interaction.followUp(
               authFailureMessage(
                 interaction,
                 auth,
@@ -995,13 +997,13 @@ client.on('interactionCreate', async (interaction) => {
 
           if (filteredResults.length === 0) {
             if (searchResults.length === 0)
-              return await interaction.followUp({
+              return interaction.followUp({
                 embeds: [basicEmbed(s(interaction).error.SKIN_NOT_FOUND)]
               });
 
             const skin = searchResults[0].obj;
             const otherAlert = alertExists(interaction.user.id, skin.uuid);
-            return await interaction.followUp({
+            return interaction.followUp({
               embeds: [
                 basicEmbed(
                   s(interaction).error.DUPLICATE_ALERT.f({
@@ -1039,7 +1041,7 @@ client.on('interactionCreate', async (interaction) => {
               channel_id: interaction.channelId
             });
 
-            return await interaction.followUp({
+            return interaction.followUp({
               embeds: [await skinChosenEmbed(interaction, skin)],
               components: [
                 removeAlertActionRow(
@@ -1074,7 +1076,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'alerts': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1088,7 +1090,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'update': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1096,7 +1098,7 @@ client.on('interactionCreate', async (interaction) => {
           const id = interaction.user.id;
           const authSuccess = await authUser(id);
           if (!authSuccess.success)
-            return await interaction.followUp(
+            return interaction.followUp(
               authFailureMessage(
                 interaction,
                 authSuccess,
@@ -1131,7 +1133,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'testalerts': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1140,7 +1142,7 @@ client.on('interactionCreate', async (interaction) => {
 
           const auth = await authUser(interaction.user.id);
           if (!auth.success)
-            return await interaction.followUp(
+            return interaction.followUp(
               authFailureMessage(
                 interaction,
                 auth,
@@ -1159,7 +1161,7 @@ client.on('interactionCreate', async (interaction) => {
 
           const json = readUserJson(interaction.user.id);
           if (json && json.accounts.length >= config.maxAccountsPerUser) {
-            return await interaction.followUp({
+            return interaction.followUp({
               embeds: [
                 basicEmbed(
                   s(interaction).error.TOO_MANY_ACCOUNTS.f({
@@ -1183,7 +1185,7 @@ client.on('interactionCreate', async (interaction) => {
             !valorantUser.auth ||
             !valorantUser.auth.waiting2FA
           )
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.UNEXPECTED_2FA)],
               ephemeral: true
             });
@@ -1232,7 +1234,7 @@ client.on('interactionCreate', async (interaction) => {
         case 'forget': {
           const accountCount = getNumberOfAccounts(interaction.user.id);
           if (accountCount === 0)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1247,13 +1249,13 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             if (targetIndex === null)
-              return await interaction.reply({
+              return interaction.reply({
                 embeds: [basicEmbed(s(interaction).error.ACCOUNT_NOT_FOUND)],
                 ephemeral: true
               });
 
             if (targetIndex > accountCount)
-              return await interaction.reply({
+              return interaction.reply({
                 embeds: [
                   basicEmbed(
                     s(interaction).error.ACCOUNT_NUMBER_TOO_HIGH.f({
@@ -1297,12 +1299,12 @@ client.on('interactionCreate', async (interaction) => {
           if (otherUser && otherUser.id !== interaction.user.id) {
             const otherValorantUser = getUser(otherUser.id);
             if (!otherValorantUser)
-              return await interaction.reply({
+              return interaction.reply({
                 embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED_OTHER)]
               });
 
             if (!getSetting(otherUser.id, 'othersCanViewColl'))
-              return await interaction.reply({
+              return interaction.reply({
                 embeds: [
                   basicEmbed(
                     s(interaction).error.OTHER_COLLECTION_DISABLED.f({
@@ -1314,7 +1316,7 @@ client.on('interactionCreate', async (interaction) => {
 
             targetUser = otherUser;
           } else if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1330,7 +1332,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'battlepass': {
           if (!valorantUser)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1353,7 +1355,7 @@ client.on('interactionCreate', async (interaction) => {
             const skins = await searchSkin(skinName, interaction.locale, 25);
 
             if (skins.length === 0) {
-              return await interaction.followUp({
+              return interaction.followUp({
                 embeds: [basicEmbed(s(interaction).error.SKIN_NOT_FOUND)]
               });
             } else if (
@@ -1366,7 +1368,7 @@ client.on('interactionCreate', async (interaction) => {
 
               const stats = getStatsFor(skin.uuid);
 
-              return await interaction.followUp({
+              return interaction.followUp({
                 embeds: [await statsForSkinEmbed(skin, stats, interaction)]
               });
             } else {
@@ -1402,7 +1404,7 @@ client.on('interactionCreate', async (interaction) => {
 
           const accountCount = getNumberOfAccounts(interaction.user.id);
           if (accountCount === 0)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1415,13 +1417,13 @@ client.on('interactionCreate', async (interaction) => {
 
           const valorantUser = switchAccount(interaction.user.id, targetIndex);
           if (targetIndex === null)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.ACCOUNT_NOT_FOUND)],
               ephemeral: true
             });
 
           if (targetIndex === userJson.currentAccount)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [
                 basicEmbed(
                   s(interaction).info.ACCOUNT_ALREADY_SELECTED.f(
@@ -1434,7 +1436,7 @@ client.on('interactionCreate', async (interaction) => {
             });
 
           if (targetIndex > accountCount)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [
                 basicEmbed(
                   s(interaction).error.ACCOUNT_NUMBER_TOO_HIGH.f({
@@ -1460,7 +1462,7 @@ client.on('interactionCreate', async (interaction) => {
         case 'accounts': {
           const userJson = readUserJson(interaction.user.id);
           if (!userJson)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
               ephemeral: true
             });
@@ -1472,9 +1474,9 @@ client.on('interactionCreate', async (interaction) => {
         case 'settings': {
           switch (interaction.options.getSubcommand()) {
             case 'view':
-              return await handleSettingsViewCommand(interaction);
+              return handleSettingsViewCommand(interaction);
             case 'set':
-              return await handleSettingsSetCommand(interaction);
+              return handleSettingsSetCommand(interaction);
           }
 
           break;
@@ -1545,7 +1547,7 @@ client.on('interactionCreate', async (interaction) => {
       switch (interaction.customId) {
         case 'skin-select': {
           if (interaction.message.interaction.user.id !== interaction.user.id) {
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_ALERT)],
               ephemeral: true
             });
@@ -1556,7 +1558,7 @@ client.on('interactionCreate', async (interaction) => {
 
           const otherAlert = alertExists(interaction.user.id, chosenSkin);
           if (otherAlert)
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [
                 basicEmbed(
                   s(interaction).error.DUPLICATE_ALERT.f({
@@ -1600,7 +1602,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'skin-select-stats': {
           if (interaction.message.interaction.user.id !== interaction.user.id) {
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_STATS)],
               ephemeral: true
             });
@@ -1619,7 +1621,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         case 'bundle-select': {
           if (interaction.message.interaction.user.id !== interaction.user.id) {
-            return await interaction.reply({
+            return interaction.reply({
               embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_BUNDLE)],
               ephemeral: true
             });
@@ -1657,7 +1659,7 @@ client.on('interactionCreate', async (interaction) => {
         const [, uuid, id] = interaction.customId.split('/');
 
         if (id !== interaction.user.id)
-          return await interaction.reply({
+          return interaction.reply({
             embeds: [basicEmbed(s(interaction).error.NOT_UR_ALERT)],
             ephemeral: true
           });
@@ -1717,7 +1719,7 @@ client.on('interactionCreate', async (interaction) => {
         const [, id, pageIndex] = interaction.customId.split('/');
 
         if (id !== interaction.user.id)
-          return await interaction.reply({
+          return interaction.reply({
             embeds: [basicEmbed(s(interaction).error.NOT_UR_ALERT)],
             ephemeral: true
           });
@@ -1735,7 +1737,7 @@ client.on('interactionCreate', async (interaction) => {
         const [, id, pageIndex] = interaction.customId.split('/');
 
         if (id !== interaction.user.id)
-          return await interaction.reply({
+          return interaction.reply({
             embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_STATS)],
             ephemeral: true
           });
@@ -1756,7 +1758,7 @@ client.on('interactionCreate', async (interaction) => {
 
         const loadoutResponse = await getLoadout(user);
         if (!loadoutResponse.success)
-          return await interaction.reply(
+          return interaction.reply(
             authFailureMessage(
               interaction,
               loadoutResponse,
@@ -1784,7 +1786,7 @@ client.on('interactionCreate', async (interaction) => {
 
         const loadoutResponse = await getLoadout(user);
         if (!loadoutResponse.success)
-          return await interaction.reply(
+          return interaction.reply(
             authFailureMessage(
               interaction,
               loadoutResponse,
@@ -1815,7 +1817,7 @@ client.on('interactionCreate', async (interaction) => {
         const [, id, uuid] = interaction.customId.split('/');
 
         if (id !== interaction.user.id)
-          return await interaction.reply({
+          return interaction.reply({
             embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_BUNDLE)],
             ephemeral: true
           });
@@ -1830,13 +1832,13 @@ client.on('interactionCreate', async (interaction) => {
         const [, customId, id, accountIndex] = interaction.customId.split('/');
 
         if (id !== interaction.user.id)
-          return await interaction.reply({
+          return interaction.reply({
             embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_GENERIC)],
             ephemeral: true
           });
 
         if (!canSendMessages(interaction.channel))
-          return await interaction.reply({
+          return interaction.reply({
             embeds: [basicEmbed(s(interaction).error.GENERIC_NO_PERMS)]
           });
 
@@ -1878,7 +1880,7 @@ client.on('interactionCreate', async (interaction) => {
           parseInt(accountIndex)
         );
         if (!success)
-          return await interaction.followUp({
+          return interaction.followUp({
             embeds: [basicEmbed(s(interaction).error.ACCOUNT_NOT_FOUND)],
             ephemeral: true
           });
@@ -1967,7 +1969,7 @@ client.on('interactionCreate', async (interaction) => {
         const focusedValue = interaction.options.getFocused();
 
         const userJson = readUserJson(interaction.user.id);
-        if (!userJson) return await interaction.respond([]);
+        if (!userJson) return interaction.respond([]);
 
         const values = [];
         for (const [index, account] of Object.entries(userJson.accounts)) {

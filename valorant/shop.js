@@ -16,7 +16,7 @@ import { deleteUser } from './accountSwitcher.js';
 import { mqGetShop, useMultiqueue } from '../misc/multiqueue.js';
 
 export const getShop = async (id, account = null) => {
-  if (useMultiqueue()) return await mqGetShop(id, account);
+  if (useMultiqueue()) return mqGetShop(id, account);
 
   const authSuccess = await authUser(id, account);
   if (!authSuccess.success) return authSuccess;

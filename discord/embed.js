@@ -13,7 +13,8 @@ import {
   itemTypes,
   removeAlertActionRow,
   removeAlertButton,
-  fetchChannel
+  fetchChannel,
+  isNumberBetween
 } from '../misc/util.js';
 import config from '../misc/config.js';
 import {
@@ -999,7 +1000,7 @@ export const switchAccountButtons = (
   if (!json || (json.accounts.length === 1 && !oneAccountButton)) return [];
   const accountNumbers = [...Array(json.accounts.length).keys()]
     .map((n) => n + 1)
-    .slice(0, 5);
+    .slice(0, 25);
   const hideIgn = getSetting(id, 'hideIgn');
 
   const buttons = [];
@@ -1019,7 +1020,38 @@ export const switchAccountButtons = (
     buttons.push(button);
   }
 
-  return [new ActionRowBuilder().setComponents(...buttons)];
+  const MAX_BUTTONS_PER_ROW = 5;
+  const MAX_ACTION_ROWS = 5;
+
+  const actionRows = [];
+  let currentActionRow = new ActionRowBuilder();
+  let actionRowCount = 0;
+
+  for (let i = 0; i < buttons.length; i++) {
+    const button = buttons[i];
+
+    // Add button to current action row
+    currentActionRow.addComponent(button);
+
+    // If we've reached the max number of buttons per row, create a new action row
+    if (currentActionRow.getComponents().length === MAX_BUTTONS_PER_ROW) {
+      actionRows.push(currentActionRow);
+      currentActionRow = new ActionRowBuilder();
+      actionRowCount++;
+
+      // If we've reached the max number of action rows, break out of the loop
+      if (actionRowCount === MAX_ACTION_ROWS) {
+        break;
+      }
+    }
+  }
+
+  // If there are any remaining buttons, add them to a new action row
+  if (currentActionRow.getComponents().length > 0) {
+    actionRows.push(currentActionRow);
+  }
+
+  return actionRows;
 };
 
 const alertFieldDescription = async (
