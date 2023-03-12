@@ -1992,9 +1992,10 @@ const handleError = async (e, interaction) => {
   }
 };
 
+// TODO for daunt: move presence data to config
 export const startBot = () => {
   console.log('Logging in...');
-  client.setPresence({
+  client.user.setPresence({
     activities: [
       {
         name: '/shop',
