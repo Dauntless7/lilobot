@@ -1,5 +1,7 @@
 # SkinPeek
 
+**Disclaimer: This is a fork of SkinPeek and it not recommended to use this fork for public bots. The code has been modified for private usage only (eg: allowing 25 accounts per user instead of 5).** The regular ReadMe is below:
+
 Discord bot to view your Valorant daily shop, set alerts for specific skins, and much more.  
 Simple to setup, easy to use, and has many useful features and commands.
 
