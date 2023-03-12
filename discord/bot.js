@@ -112,6 +112,7 @@ import fuzzysort from 'fuzzysort';
 import { renderCollection } from '../valorant/inventory.js';
 import { getLoadout } from '../valorant/inventory.js';
 import { spawn } from 'child_process';
+import { Colors } from 'discord.js';
 
 export const client = new Client({
   intents: [
@@ -228,6 +229,10 @@ setTimeout(() => {
 });
 
 const commands = [
+  {
+    name: 'lilo',
+    description: 'no'
+  },
   {
     name: 'shop',
     description: 'Show your current daily shop!',
@@ -522,6 +527,8 @@ client.on('messageCreate', async (message) => {
       const splits = content.split(' ');
       if (splits[1] === 'reload') {
         const oldToken = config.token;
+        const tokenChangeString =
+          "\nI noticed you changed the token. You'll have to restart the bot for that to happen.";
 
         destroyTasks();
         saveConfig();
@@ -530,9 +537,7 @@ client.on('messageCreate', async (message) => {
         if (client.shard) sendShardMessage({ type: 'configReload' });
 
         let s = 'Successfully reloaded the config!';
-        if (config.token !== oldToken)
-          s +=
-            "\nI noticed you changed the token. You'll have to restart the bot for that to happen.";
+        if (config.token !== oldToken) s += tokenChangeString;
         await message.reply(s);
       } else if (splits[1] === 'load') {
         const oldToken = config.token;
@@ -544,14 +549,12 @@ client.on('messageCreate', async (message) => {
         if (client.shard) sendShardMessage({ type: 'configReload' });
 
         let s = 'Successfully reloaded the config from disk!';
-        if (config.token !== oldToken)
-          s +=
-            "\nI noticed you changed the token. You'll have to restart the bot for that to happen.";
+        if (config.token !== oldToken) s += tokenChangeString;
         await message.reply(s);
       } else if (splits[1] === 'read') {
         const s =
           'Here is the config.json the bot currently has loaded:```json\n' +
-          JSON.stringify({ ...config, token: '[redacted]' }, null, 2) +
+          JSON.stringify({ ...config, token: '(no)' }, null, 2) +
           '```';
         await message.reply(s);
       } else {
@@ -877,6 +880,18 @@ client.on('interactionCreate', async (interaction) => {
 
           console.log(`Sent ${interaction.user.tag}'s night market!`);
 
+          break;
+        }
+        case 'lilo': {
+          await interaction.reply({
+            embeds: [
+              {
+                description: 'your mom',
+                color: Colors.LuminousVividPink
+              }
+            ],
+            ephemeral: true
+          });
           break;
         }
         case 'balance': {
