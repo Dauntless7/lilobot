@@ -231,8 +231,10 @@ setTimeout(() => {
 const commands = [
   {
     name: 'lilo',
-    description: 'no'
+    description: 'no',
+    ephemeral: false
   },
+
   {
     name: 'shop',
     description: 'Show your current daily shop!',
