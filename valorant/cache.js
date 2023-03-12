@@ -28,8 +28,6 @@ let weapons,
 let prices = { timestamp: null };
 
 export const getValorantVersion = async () => {
-  console.log('Fetching current valorant version...');
-
   const req = await fetch('https://valorant-api.com/v1/version');
   console.assert(
     req.statusCode === 200,

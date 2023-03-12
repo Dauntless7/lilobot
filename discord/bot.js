@@ -127,15 +127,24 @@ const cronTasks = [];
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
 
-  console.log('Loading skins...');
-  fetchData().then(() => console.log('Skins loaded!'));
-  fetchRiotClientVersion().then(() =>
-    console.log('Fetched latest Riot user-agent!')
-  );
+  client.user.setPresence({
+    activities: [
+      {
+        name: '/shop',
+        type: 1,
+        url: 'https://twitch.tv/twitch'
+      }
+    ],
+    status: 'dnd'
+  });
+
+  await fetchData();
+  console.log('Skins loaded!');
+
+  await fetchRiotClientVersion();
+  console.log('Fetched latest Riot user-agent!');
 
   scheduleTasks();
-
-  await client.user.setActivity('your store!', { type: 'WATCHING' });
 
   // deploy commands if different
   if (
@@ -1994,16 +2003,5 @@ const handleError = async (e, interaction) => {
 
 // TODO for daunt: move presence data to config
 export const startBot = () => {
-  console.log('Logging in...');
-  client.user.setPresence({
-    activities: [
-      {
-        name: '/shop',
-        type: 1,
-        url: 'https://twitch.tv/twitch'
-      }
-    ],
-    status: 'dnd'
-  });
   client.login(config.token);
 };

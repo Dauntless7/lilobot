@@ -2,6 +2,7 @@ import config from './config.js';
 import { escapeMarkdown } from 'discord.js';
 import { client } from '../discord/bot.js';
 import { sendShardMessage } from './shardMessage.js';
+import { Colors } from 'discord.js';
 
 const messagesToLog = [];
 
@@ -70,10 +71,20 @@ export const sendConsoleOutput = () => {
         while (
           messagesToLog.length &&
           s.length + messagesToLog[0].length < 2000
-        )
-          s += messagesToLog.shift() + '\n';
+        ) {
+          s += messagesToLog.shift() + '\n\n';
+        }
 
-        channel.send(s);
+        channel.send({
+          embeds: [
+            {
+              title: `${client.user?.username ?? 'lilobot'}'s log`,
+              description: s,
+              color: Colors.LuminousVividPink,
+              timestamp: new Date()
+            }
+          ]
+        });
       }
     }
 
