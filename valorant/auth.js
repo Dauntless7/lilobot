@@ -6,7 +6,8 @@ import {
   tokenExpiry,
   decodeToken,
   ensureUsersFolder,
-  encryptPassword
+  encryptPassword,
+  decryptPassword
 } from '../misc/util.js';
 import config from '../misc/config.js';
 import fs from 'fs';
@@ -274,7 +275,10 @@ export const redeem2FACode = async (id, code) => {
     id,
     {
       login: user.auth.login,
-      password: atob(user.auth.password || ''),
+      password: decryptPassword(
+        user.auth.password.encryptedData,
+        user.auth.password.iv
+      ), // atob(user.auth.password || ''),
       cookies: user.auth.cookies
     },
     json.response.parameters.uri,
@@ -300,7 +304,7 @@ const processAuthResponse = async (id, authData, redirect, user = null) => {
   if (authData.login && config.storePasswords && !user.auth.waiting2FA) {
     // don't store login/password for people with 2FA
     user.auth.login = authData.login;
-    user.auth.password = btoa(authData.password);
+    user.auth.password = encryptPassword(authData.password);
     delete user.auth.cookies;
   } else {
     user.auth.cookies = authData.cookies;

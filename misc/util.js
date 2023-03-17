@@ -6,7 +6,7 @@ import {
 } from 'discord.js';
 import https from 'https';
 import fs from 'fs';
-import crypto from 'crypto';
+import { createDecipheriv, randomBytes } from 'crypto';
 import { rarityEmoji } from '../discord/emoji.js';
 import { getItem, getRarity } from '../valorant/cache.js';
 import { DEFAULT_LANG, l, valToDiscLang } from './languages.js';
@@ -107,16 +107,25 @@ export const asyncReadJSONFile = async (path) => {
   return JSON.parse((await asyncReadFile(path)).toString());
 };
 
-export const encryptPassword = (password) => {
-  const key = crypto.randomBytes(32);
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+export const encryptPassword = (password = '') => {
+  if (!password) return password;
+  const key = randomBytes(32);
+  const iv = randomBytes(16);
+  const cipher = createDecipheriv('aes-256-cbc', key, iv);
   let encrypted = cipher.update(password);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
 };
-// riot utils
 
+export const decryptPassword = (encryptedData = '', iv = '') => {
+  if (!encryptedData || !iv) return '';
+  const decipher = createDecipheriv('aes-256-cbc', key, Buffer.from(iv, 'hex'));
+  let decrypted = decipher.update(Buffer.from(encryptedData, 'hex'));
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+};
+
+// riot utils
 export const itemTypes = {
   SKIN: 'e7c63390-eda7-46e0-bb7a-a6abdacd2433',
   BUDDY: 'dd3bf334-87f3-40bd-b043-682a57a8dc3a',

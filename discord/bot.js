@@ -887,10 +887,9 @@ client.on('interactionCreate', async (interaction) => {
             embeds: [
               {
                 description: 'your mom',
-                color: Colors.LuminousVividPink
+                color: 0xfde3e7
               }
-            ],
-            ephemeral: true
+            ]
           });
           break;
         }

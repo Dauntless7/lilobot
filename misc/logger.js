@@ -80,7 +80,7 @@ export const sendConsoleOutput = () => {
             {
               title: `${client.user?.username ?? 'lilobot'}'s log`,
               description: s,
-              color: Colors.LuminousVividPink,
+              color: 0xfde3e7,
               timestamp: new Date()
             }
           ]
