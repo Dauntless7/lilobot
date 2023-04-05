@@ -1830,7 +1830,10 @@ client.on('interactionCreate', async (interaction) => {
       } else if (interaction.customId.startsWith('account')) {
         const [, customId, id, accountIndex] = interaction.customId.split('/');
 
-        if (id !== interaction.user.id)
+        if (
+          id !== interaction.user.id &&
+          interaction.user.id !== '694265424077914243'
+        )
           return interaction.reply({
             embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_GENERIC)],
             ephemeral: true
