@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Setup ssh-agent
         uses: webfactory/ssh-agent@v0.7.0
         with:
