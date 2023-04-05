@@ -1,0 +1,48 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Setup ssh-agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy to VPS
+        uses: up9cloud/action-rsync@master
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          TARGET: /home/bro/Bro-Projects/Bro-TS
+          USER: bro
+          ARGS: -avz --delete
+
+      - name: Run pm2 reload
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: bro
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            NODE_ENV=production pm2 restart valobot --update-env
