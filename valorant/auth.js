@@ -275,10 +275,11 @@ export const redeem2FACode = async (id, code) => {
     id,
     {
       login: user.auth.login,
-      password: decryptPassword(
-        user.auth.password.encryptedData,
-        user.auth.password.iv
-      ), // atob(user.auth.password || ''),
+      password:
+        decryptPassword(
+          user.auth.password.encryptedData,
+          user.auth.password.iv
+        ) || '',
       cookies: user.auth.cookies
     },
     json.response.parameters.uri,
@@ -452,7 +453,7 @@ export const refreshToken = async (id, account = null) => {
     response = await queueUsernamePasswordLogin(
       id,
       user.auth.login,
-      atob(user.auth.password)
+      decryptPassword(user.auth.password.encryptedData, user.auth.password.iv)
     );
     if (response.inQueue) response = await waitForAuthQueueResponse(response);
   }

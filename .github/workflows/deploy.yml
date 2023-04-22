@@ -39,7 +39,7 @@ jobs:
           KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           TARGET: ${{ vars.TARGET_FOLDER }}
           USER: ${{ vars.DEPLOY_HOST_USERNAME }}
-          ARGS: -avz --progress --delete --exclude=config.json
+          ARGS: -avz --progress --delete --exclude=config.json --exclude=/home/bro/valo-store/data/**
 
       - name: Run pm2 reload
         uses: appleboy/ssh-action@master

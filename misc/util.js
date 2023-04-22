@@ -173,7 +173,7 @@ export const extractTokensFromUri = (uri) => {
 
 export const decodeToken = (token) => {
   const encodedPayload = token.split('.')[1];
-  return JSON.parse(atob(encodedPayload));
+  return JSON.parse(Buffer.from(encodedPayload, 'base64'));
 };
 
 export const tokenExpiry = (token) => {
