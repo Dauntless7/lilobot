@@ -1,12 +1,14 @@
 # SkinPeek
 
-**Disclaimer: This is a fork of SkinPeek and it not recommended to use this fork for public bots. The code has been modified for private usage only (eg: allowing 25 accounts per user instead of 5).** The regular ReadMe is below:
+**Disclaimer: This is a fork of SkinPeek and it not recommended to use this fork for public bots. The code has been modified for private usage only (eg: allowing 25 accounts per user instead of 5).** The regular README is below:
+
+#### Also known as &nbsp;<img height="16" src="https://user-images.githubusercontent.com/20621396/229198663-8ad95415-40c4-4385-bcc7-f310c0333862.png"> **Ministral**! [Invite the bot to your server](https://discord.com/api/oauth2/authorize?client_id=925550988146917456&permissions=536602999920&scope=bot%20applications.commands).
 
 Discord bot to view your Valorant daily shop, set alerts for specific skins, and much more.  
 Simple to setup, easy to use, and has many useful features and commands.
 
-<img src="https://user-images.githubusercontent.com/20621396/184029573-588c84aa-e183-409c-9452-e8d13028c228.png" alt="shop" width="504" >  
-<img src="https://user-images.githubusercontent.com/20621396/184029594-18d59bc6-7a54-48c8-89fc-d89aac76b180.png" alt="alert" width="633" >
+![image](https://user-images.githubusercontent.com/20621396/229211202-eefcacfc-4a9f-48c0-bd60-f7a94dd19925.png)  
+![image](https://user-images.githubusercontent.com/20621396/229211674-0ab4ae95-0889-4f43-a446-69887ca664e3.png)
 
 <details>
 <summary>See some more screenshots</summary>
@@ -32,13 +34,12 @@ Feel free to join the [support server](https://discord.gg/yx5sPJxWth) for any he
 - ✔ Automatically imports new skins from the latest Valorant updates
 - ⬛ Hide your Valorant username from the message using `/settings`
 - 🌍 Skin names are automatically translated to any language that Valorant supports
+- ✨ ...and much more!
 - 🛠 For bot admins:
   - Really easy to set up
   - Optimised for performance and reliability
   - Highly configurable in `config.json`
-  - Toggleable login and shop queues to prevent rate limiting
-  - Shop cache to prevent fetching the same user's shop twice
-  - Used by large shop bots, highly scalable
+  - Login queue and shop cache systems to prevent rate limiting
   - Fully supports sharding (required for 2500+ servers)
 
 ## Installation
@@ -71,8 +72,8 @@ Feel free to join the [support server](https://discord.gg/yx5sPJxWth) for any he
 ### Replit
 
 [![Run on Repl.it](https://replit.com/badge/github/Gam3rBoy57/SkinPeekReplit)](https://replit.com/github/Gam3rBoy57/SkinPeekReplit)  
-Thanks to [Gam3rBoy57](https://replit.com/badge/github/Gam3rBoy57) for maintaining the Replit version!  
-**Note:** You will probably have to `/login` every day, and your alerts most likely won't work. Read more [here](https://github.com/giorgi-o/SkinPeek/pull/46#issuecomment-1213579690).
+Thanks to [Gam3rBoy57](https://github.com/Gam3rBoy57) for maintaining the Replit version! For setup instructions and Replit-specific support, read the top of [this readme](https://github.com/Gam3rBoy57/SkinPeekReplit#readme).  
+**Note:** You will probably have to `/login` every day on the free version, and your alerts most likely won't work. Read more [here](https://github.com/giorgi-o/SkinPeek/pull/46#issuecomment-1213579690).
 
 ### Docker
 
@@ -82,7 +83,6 @@ For advanced users who want to deploy the bot using [Docker](https://www.docker.
 - Create a docker-compose file like [this](https://github.com/giorgi-o/SkinPeek/blob/master/docker-compose.yml) and a config file like [this](https://github.com/giorgi-o/SkinPeek/blob/master/config.json.example)
 - Put your bot token in [config.json](https://github.com/giorgi-o/SkinPeek/blob/master/config.json.example)
 - Use `docker-compose up -d` to start the bot, `docker-compose logs -f` to see the logs and `docker-compose down` to stop it.
-- Send `!deploy guild` to deploy in the current guild or `!deploy global` to deploy the commands globally.
 
 ## Future Improvements
 

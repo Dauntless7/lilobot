@@ -7,16 +7,17 @@ import {
   formatNightMarket,
   getPuuid,
   isMaintenance,
+  isSameDay,
   userRegion
 } from '../misc/util.js';
-import { addBundleData } from './cache.js';
+import { addBundleData, getSkin, getSkinFromSkinUuid } from './cache.js';
 import { addStore } from '../misc/stats.js';
 import config from '../misc/config.js';
-import { deleteUser } from './accountSwitcher.js';
+import { deleteUser, saveUser } from './accountSwitcher.js';
 import { mqGetShop, useMultiqueue } from '../misc/multiqueue.js';
 
 export const getShop = async (id, account = null) => {
-  if (useMultiqueue()) return mqGetShop(id, account);
+  if (useMultiqueue()) return await mqGetShop(id, account);
 
   const authSuccess = await authUser(id, account);
   if (!authSuccess.success) return authSuccess;
@@ -77,13 +78,13 @@ export const getOffers = async (id, account = null) => {
   const resp = await getShop(id, account);
   if (!resp.success) return resp;
 
-  return {
+  return await easterEggOffers(id, account, {
     success: true,
     offers: resp.shop.SkinsPanelLayout.SingleItemOffers,
     expires:
       Math.floor(Date.now() / 1000) +
       resp.shop.SkinsPanelLayout.SingleItemOffersRemainingDurationInSeconds
-  };
+  });
 };
 
 export const getBundles = async (id, account = null) => {
@@ -291,4 +292,30 @@ const get9PMTimetstamp = (timestamp) => {
       999
     ) / 1000
   );
+};
+
+const easterEggOffers = async (id, account, offers) => {
+  // shhh...
+  try {
+    const _offers = { ...offers, offers: [...offers.offers] };
+    const user = getUser(id, account);
+
+    const sawEasterEgg = isSameDay(user.lastSawEasterEgg, Date.now());
+    const isApril1st =
+      new Date().getMonth() === 3 && new Date().getDate() === 1;
+    if (isApril1st && !sawEasterEgg) {
+      for (const [i, uuid] of Object.entries(_offers.offers)) {
+        const skin = await getSkin(uuid);
+        const defaultSkin = await getSkinFromSkinUuid(skin.defaultSkinUuid);
+        _offers.offers[i] = defaultSkin.uuid;
+      }
+
+      user.lastSawEasterEgg = Date.now();
+      saveUser(user);
+      return _offers;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return offers;
 };

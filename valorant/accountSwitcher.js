@@ -72,11 +72,20 @@ export const addUser = (user) => {
     let foundDuplicate = false;
     for (let i = 0; i < userJson.accounts.length; i++) {
       if (userJson.accounts[i].puuid === user.puuid) {
-        user.alerts = removeDupeAlerts(
-          user.alerts.concat(userJson.accounts[i].alerts)
-        );
+        const oldUser = userJson.accounts[i];
+
+        // merge the accounts
         userJson.accounts[i] = user;
         userJson.currentAccount = i + 1;
+
+        // copy over data from old account
+        user.alerts = removeDupeAlerts(
+          oldUser.alerts.concat(userJson.accounts[i].alerts)
+        );
+        user.lastFetchedData = oldUser.lastFetchedData;
+        user.lastNoticeSeen = oldUser.lastNoticeSeen;
+        user.lastSawEasterEgg = oldUser.lastSawEasterEgg;
+
         foundDuplicate = true;
       }
     }

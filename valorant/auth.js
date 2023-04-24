@@ -6,8 +6,8 @@ import {
   tokenExpiry,
   decodeToken,
   ensureUsersFolder,
-  encryptPassword,
-  decryptPassword
+  wait,
+  getProxyManager
 } from '../misc/util.js';
 import config from '../misc/config.js';
 import fs from 'fs';
@@ -33,7 +33,9 @@ export class User {
     username,
     region,
     authFailures,
-    lastFetchedData
+    lastFetchedData,
+    lastNoticeSeen,
+    lastSawEasterEgg
   }) {
     this.id = id;
     this.puuid = puuid;
@@ -43,6 +45,8 @@ export class User {
     this.region = region;
     this.authFailures = authFailures || 0;
     this.lastFetchedData = lastFetchedData || 0;
+    this.lastNoticeSeen = lastNoticeSeen || '';
+    this.lastSawEasterEgg = lastSawEasterEgg || 0;
   }
 }
 
@@ -119,12 +123,16 @@ export const authUser = async (id, account = null) => {
   const rsoExpiry = tokenExpiry(user.auth.rso);
   if (rsoExpiry - Date.now() > 10_000) return { success: true };
 
-  return refreshToken(id, account);
+  return await refreshToken(id, account);
 };
 
 export const redeemUsernamePassword = async (id, login, password) => {
   let rateLimit = isRateLimited('auth.riotgames.com');
   if (rateLimit) return { success: false, rateLimit: rateLimit };
+
+  const proxyManager = getProxyManager();
+  const proxy = await proxyManager.getProxy('auth.riotgames.com');
+  const agent = await proxy?.createAgent('auth.riotgames.com');
 
   // prepare cookies for auth request
   const req1 = await fetch('https://auth.riotgames.com/api/v1/authorization', {
@@ -143,7 +151,8 @@ export const redeemUsernamePassword = async (id, login, password) => {
       redirect_uri: 'http://localhost/redirect',
       response_type: 'token id_token',
       scope: 'openid link ban lol_region'
-    })
+    }),
+    proxy: agent
   });
   console.assert(
     req1.statusCode === 200,
@@ -169,7 +178,8 @@ export const redeemUsernamePassword = async (id, login, password) => {
       username: login,
       password: password,
       remember: true
-    })
+    }),
+    proxy: agent
   });
   console.assert(
     req2.statusCode === 200,
@@ -212,7 +222,7 @@ export const redeemUsernamePassword = async (id, login, password) => {
 
     if (config.storePasswords) {
       user.auth.login = login;
-      user.auth.password = encryptPassword(password);
+      user.auth.password = btoa(password);
     }
 
     addUser(user);
@@ -275,11 +285,7 @@ export const redeem2FACode = async (id, code) => {
     id,
     {
       login: user.auth.login,
-      password:
-        decryptPassword(
-          user.auth.password.encryptedData,
-          user.auth.password.iv
-        ) || '',
+      password: atob(user.auth.password || ''),
       cookies: user.auth.cookies
     },
     json.response.parameters.uri,
@@ -305,7 +311,7 @@ const processAuthResponse = async (id, authData, redirect, user = null) => {
   if (authData.login && config.storePasswords && !user.auth.waiting2FA) {
     // don't store login/password for people with 2FA
     user.auth.login = authData.login;
-    user.auth.password = encryptPassword(authData.password);
+    user.auth.password = btoa(authData.password);
     delete user.auth.cookies;
   } else {
     user.auth.cookies = authData.cookies;
@@ -453,7 +459,7 @@ export const refreshToken = async (id, account = null) => {
     response = await queueUsernamePasswordLogin(
       id,
       user.auth.login,
-      decryptPassword(user.auth.password.encryptedData, user.auth.password.iv)
+      atob(user.auth.password)
     );
     if (response.inQueue) response = await waitForAuthQueueResponse(response);
   }
@@ -466,7 +472,7 @@ export const refreshToken = async (id, account = null) => {
 
 let riotClientVersion;
 let userAgentFetchPromise;
-export const fetchRiotClientVersion = async () => {
+export const fetchRiotClientVersion = async (attempt = 1) => {
   if (userAgentFetchPromise) return userAgentFetchPromise;
 
   let resolve;
@@ -475,15 +481,48 @@ export const fetchRiotClientVersion = async () => {
     userAgentFetchPromise = new Promise((r) => (resolve = r));
   }
 
+  const headers = {
+    'User-Agent': 'giorgi-o/skinpeek',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  if (config.githubToken)
+    headers['Authorization'] = `Bearer ${config.githubToken}`;
+
   const githubReq = await fetch(
     'https://api.github.com/repos/Morilli/riot-manifests/contents/Riot%20Client/KeystoneFoundationLiveWin?ref=master',
     {
-      headers: { 'User-Agent': 'giorgi-o/skinpeek' }
+      headers
     }
   );
-  const json = JSON.parse(githubReq.body);
 
-  const versions = json.map((file) => file.name.split('_')[0]);
+  let json,
+    versions,
+    error = false;
+  try {
+    if (githubReq.statusCode !== 200) error = true;
+    else {
+      json = JSON.parse(githubReq.body);
+      versions = json.map((file) => file.name.split('_')[0]);
+    }
+  } catch (e) {
+    error = true;
+  }
+
+  if (error) {
+    if (attempt === 3) {
+      console.error('Failed to fetch latest Riot user-agent! (tried 3 times)');
+
+      const fallbackVersion = '63.0.9.4909983';
+      console.error(`Using version number ${fallbackVersion} instead...`);
+    }
+
+    console.error(`Failed to fetch latest Riot user-agent! (try ${attempt}/3`);
+    console.error(githubReq);
+
+    await wait(1000);
+    return fetchRiotClientVersion(attempt + 1);
+  }
+
   const compareVersions = (a, b) => {
     const aSplit = a.split('.');
     const bSplit = b.split('.');

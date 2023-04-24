@@ -10,10 +10,20 @@ export const loadConfig = (filename = 'config.json') => {
     loadedConfig = fs.readFileSync(filename, 'utf-8');
   } catch (e) {
     try {
-      fs.readFileSync(filename + '.example', 'utf-8');
-      console.error(`You forgot to rename ${filename}.example to ${filename}!`);
-    } catch (e1) {
-      console.error(`Could not find ${filename}!`, e);
+      loadedConfig = fs.readFileSync(filename, 'utf-8');
+    } catch (e) {
+      try {
+        fs.readFileSync(filename + '.example', 'utf-8');
+        console.error(
+          `You forgot to rename ${filename}.example to ${filename}!`
+        );
+        console.error(
+          `(Hint: If you can only see ${filename}, try enabling "file name extensions" in file explorer)`
+        );
+      } catch (e1) {
+        console.error(`Could not find ${filename}!`, e);
+      }
+      return;
     }
     return;
   }
@@ -45,15 +55,14 @@ export const loadConfig = (filename = 'config.json') => {
   applyConfig(loadedConfig, 'loadoutCacheExpiration', 10 * 60 * 1000);
   applyConfig(loadedConfig, 'useShopCache', true);
   applyConfig(loadedConfig, 'useLoginQueue', false);
-  applyConfig(loadedConfig, 'loginQueue', '*/3 * * * * *');
+  applyConfig(loadedConfig, 'loginQueueInterval', 3000);
+  applyConfig(loadedConfig, 'loginQueuePollRate', 2000);
   applyConfig(loadedConfig, 'loginRetryTimeout', 10 * 60 * 1000);
   applyConfig(loadedConfig, 'authFailureStrikes', 2);
   applyConfig(loadedConfig, 'maxAccountsPerUser', 5);
   applyConfig(loadedConfig, 'userDataCacheExpiration', 168);
   applyConfig(loadedConfig, 'rateLimitBackoff', 60);
   applyConfig(loadedConfig, 'rateLimitCap', 10 * 60);
-  applyConfig(loadedConfig, 'useShopQueue', false);
-  applyConfig(loadedConfig, 'shopQueue', '*/1 * * * * *');
   applyConfig(loadedConfig, 'useMultiqueue', false);
   applyConfig(loadedConfig, 'storePasswords', false);
   applyConfig(loadedConfig, 'trackStoreStats', true);
@@ -64,7 +73,9 @@ export const loadConfig = (filename = 'config.json') => {
   applyConfig(loadedConfig, 'ownerId', '');
   applyConfig(loadedConfig, 'ownerName', '');
   applyConfig(loadedConfig, 'status', 'Up and running!');
+  applyConfig(loadedConfig, 'notice', '');
   applyConfig(loadedConfig, 'maintenanceMode', false);
+  applyConfig(loadedConfig, 'githubToken', '');
   applyConfig(loadedConfig, 'logToChannel', '');
   applyConfig(loadedConfig, 'logFrequency', '*/10 * * * * *');
   applyConfig(loadedConfig, 'logUrls', false);

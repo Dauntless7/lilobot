@@ -13,7 +13,7 @@ import { DEFAULT_VALORANT_LANG, discToValLang } from '../misc/languages.js';
 import { client } from '../discord/bot.js';
 import { sendShardMessage } from '../misc/shardMessage.js';
 
-const formatVersion = 9;
+const formatVersion = 10;
 let gameVersion;
 
 let weapons,
@@ -27,7 +27,23 @@ let weapons,
   battlepass;
 let prices = { timestamp: null };
 
+export const clearCache = () => {
+  weapons =
+    skins =
+    rarities =
+    buddies =
+    sprays =
+    cards =
+    titles =
+    bundles =
+    battlepass =
+      null;
+  prices = { timestamp: null };
+};
+
 export const getValorantVersion = async () => {
+  console.log('Fetching current valorant version...');
+
   const req = await fetch('https://valorant-api.com/v1/version');
   console.assert(
     req.statusCode === 200,
@@ -184,6 +200,7 @@ export const getSkinList = async (gameVersion) => {
 
       let icon;
       if (skin.themeUuid === '5a629df4-4765-0214-bd40-fbb96542941f') {
+        // default skins
         icon = skin.chromas[0] && skin.chromas[0].fullRender;
       } else {
         for (let i = 0; i < skin.levels.length; i++) {
@@ -193,15 +210,14 @@ export const getSkinList = async (gameVersion) => {
           }
         }
       }
-
       if (!icon) icon = null;
-
       skins[levelOne.uuid] = {
         uuid: levelOne.uuid,
         skinUuid: skin.uuid,
         names: skin.displayName,
         icon: icon,
-        rarity: skin.contentTierUuid
+        rarity: skin.contentTierUuid,
+        defaultSkinUuid: weapon.defaultSkinUuid
       };
     }
   }
@@ -604,15 +620,15 @@ export const fetchBattlepassInfo = async (gameVersion) => {
 export const getItem = async (uuid, type) => {
   switch (type) {
     case itemTypes.SKIN:
-      return getSkin(uuid);
+      return await getSkin(uuid);
     case itemTypes.BUDDY:
-      return getBuddy(uuid);
+      return await getBuddy(uuid);
     case itemTypes.CARD:
-      return getCard(uuid);
+      return await getCard(uuid);
     case itemTypes.SPRAY:
-      return getSpray(uuid);
+      return await getSpray(uuid);
     case itemTypes.TITLE:
-      return getTitle(uuid);
+      return await getTitle(uuid);
   }
 };
 
@@ -667,7 +683,7 @@ export const getRarity = async (uuid) => {
 };
 
 export const getAllSkins = async () => {
-  return Promise.all(
+  return await Promise.all(
     Object.values(skins)
       .filter((o) => typeof o === 'object')
       .map((skin) => getSkin(skin.uuid, false))

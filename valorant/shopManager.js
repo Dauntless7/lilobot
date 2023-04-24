@@ -1,30 +1,12 @@
-import { fetchChannel, wait } from '../misc/util.js';
+import { fetchChannel } from '../misc/util.js';
 import { VPEmoji } from '../discord/emoji.js';
-import {
-  getShopQueueItemStatus,
-  queueBundles,
-  queueItemShop,
-  queueNightMarket,
-  queueShop
-} from './shopQueue.js';
 import {
   renderBundles,
   renderNightMarket,
   renderOffers
 } from '../discord/embed.js';
-import { waitForAuthQueueResponse } from '../discord/authManager.js';
 import { getUser } from './auth.js';
-
-export const waitForShopQueueResponse = async (
-  queueResponse,
-  pollRate = 150
-) => {
-  while (true) {
-    let response = getShopQueueItemStatus(queueResponse.c);
-    if (response.processed) return response.result;
-    await wait(pollRate);
-  }
-};
+import { getBundles, getNightMarket, getOffers } from './shop.js';
 
 export const fetchShop = async (
   interaction,
@@ -38,7 +20,7 @@ export const fetchShop = async (
   // start uploading emoji now
   const emojiPromise = VPEmoji(interaction, channel);
 
-  let shop = await queueItemShop(targetId);
+  let shop = await getOffers(targetId);
   if (shop.inQueue) shop = await waitForShopQueueResponse(shop);
 
   user = getUser(user);
@@ -50,7 +32,7 @@ export const fetchBundles = async (interaction) => {
     interaction.channel || (await fetchChannel(interaction.channelId));
   const emojiPromise = VPEmoji(interaction, channel);
 
-  let bundles = await queueBundles(interaction.user.id);
+  let bundles = await getBundles(interaction.user.id);
   if (bundles.inQueue) bundles = await waitForShopQueueResponse(bundles);
 
   return renderBundles(bundles, interaction, await emojiPromise);
@@ -61,14 +43,8 @@ export const fetchNightMarket = async (interaction, user) => {
     interaction.channel || (await fetchChannel(interaction.channelId));
   const emojiPromise = VPEmoji(interaction, channel);
 
-  let market = await queueNightMarket(interaction.user.id);
+  let market = await getNightMarket(interaction.user.id);
   if (market.inQueue) market = await waitForShopQueueResponse(market);
 
-  return renderNightMarket(market, interaction, user, await emojiPromise);
-};
-
-export const fetchRawShop = async (id, account = null) => {
-  let offers = await queueShop(id, account);
-  if (offers.inQueue) offers = await waitForAuthQueueResponse(offers);
-  return offers;
+  return await renderNightMarket(market, interaction, user, await emojiPromise);
 };
