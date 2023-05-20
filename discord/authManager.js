@@ -6,7 +6,7 @@ import {
 } from '../valorant/authQueue.js';
 import { actionRow, retryAuthButton, wait } from '../misc/util.js';
 import { getUser } from '../valorant/auth.js';
-import { authFailureMessage, basicEmbed } from './embed.js';
+import { authFailureMessage, basicEmbed, secondaryEmbed } from './embed.js';
 import { s } from '../misc/languages.js';
 import config from '../misc/config.js';
 
@@ -14,12 +14,39 @@ let failedOperations = [];
 
 export const waitForAuthQueueResponse = async (
   queueResponse,
-  pollRate = 150
+  pollRate = 300
 ) => {
   if (!queueResponse.inQueue) return queueResponse;
   while (true) {
-    let response = getAuthQueueItemStatus(queueResponse.c);
+    let response = await getAuthQueueItemStatus(queueResponse.c);
     if (response.processed) return response.result;
+    await wait(pollRate);
+  }
+};
+
+export const activeWaitForAuthQueueResponse = async (
+  interaction,
+  queueResponse,
+  pollRate = config.loginQueuePollRate
+) => {
+  // like the above, but edits the interaction to keep the user updated
+  let replied = false;
+  while (true) {
+    let response = await getAuthQueueItemStatus(queueResponse.c);
+    if (response.processed) return response.result;
+
+    let embed;
+    if (response.timestamp)
+      embed = secondaryEmbed(
+        `Many people are using the bot! Please wait... (estimated: <t:${response.timestamp}:R>)`
+      );
+    else embed = secondaryEmbed('Processing...');
+    if (replied) await interaction.editReply({ embeds: [embed] });
+    else {
+      await interaction.followUp({ embeds: [embed] });
+      replied = true;
+    }
+
     await wait(pollRate);
   }
 };
@@ -35,12 +62,13 @@ export const loginUsernamePassword = async (
     username,
     password
   );
-  if (login.inQueue) login = await waitForAuthQueueResponse(login);
+  if (login.inQueue)
+    login = await activeWaitForAuthQueueResponse(interaction, login);
 
   const user = getUser(interaction.user.id);
   if (login.success && user) {
     console.log(`${interaction.user.tag} logged in as ${user.username}`);
-    await interaction.followUp({
+    await interaction.editReply({
       embeds: [
         basicEmbed(
           s(interaction).info.LOGGED_IN.f({ u: user.username }, interaction)
@@ -68,7 +96,7 @@ export const loginUsernamePassword = async (
       password
     });
 
-    await interaction.followUp({
+    await interaction.editReply({
       embeds: [
         basicEmbed(
           s(interaction).error.GENERIC_ERROR.f({ e: login.error.message })
@@ -86,7 +114,7 @@ export const loginUsernamePassword = async (
     });
   } else {
     console.log(`${interaction.user.tag} login error`);
-    await interaction.followUp(
+    await interaction.editReply(
       authFailureMessage(
         interaction,
         login,
@@ -155,7 +183,7 @@ export const login2FA = async (interaction, code, operationIndex = null) => {
 export const retryFailedOperation = async (interaction, index) => {
   const operation = failedOperations.find((o) => o.c === index);
   if (!operation)
-    return interaction.followUp({
+    return await interaction.followUp({
       embeds: [basicEmbed(s(interaction).error.AUTH_ERROR_RETRY_EXPIRED)],
       ephemeral: true
     });

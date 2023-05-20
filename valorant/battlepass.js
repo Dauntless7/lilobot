@@ -327,5 +327,5 @@ export const renderBattlepassProgress = async (interaction) => {
     (interaction.options && interaction.options.getInteger('maxlevel')) || 50;
   const battlepassProgress = await getBattlepassProgress(interaction, maxlevel);
 
-  return renderBattlepass(battlepassProgress, maxlevel, interaction);
+  return await renderBattlepass(battlepassProgress, maxlevel, interaction);
 };

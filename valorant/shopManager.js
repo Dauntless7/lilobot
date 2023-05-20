@@ -24,7 +24,13 @@ export const fetchShop = async (
   if (shop.inQueue) shop = await waitForShopQueueResponse(shop);
 
   user = getUser(user);
-  return renderOffers(shop, interaction, user, await emojiPromise, targetId);
+  return await renderOffers(
+    shop,
+    interaction,
+    user,
+    await emojiPromise,
+    targetId
+  );
 };
 
 export const fetchBundles = async (interaction) => {
@@ -35,7 +41,7 @@ export const fetchBundles = async (interaction) => {
   let bundles = await getBundles(interaction.user.id);
   if (bundles.inQueue) bundles = await waitForShopQueueResponse(bundles);
 
-  return renderBundles(bundles, interaction, await emojiPromise);
+  return await renderBundles(bundles, interaction, await emojiPromise);
 };
 
 export const fetchNightMarket = async (interaction, user) => {

@@ -65,41 +65,42 @@ const thumbnails = [
 ];
 
 export const authFailureMessage = (
-  interaction,
+  interactionOrId,
   authResponse,
   message = 'AUTH_ERROR',
   isEphemeral = false
 ) => {
+  const id = interactionOrId?.user?.id || interactionOrId;
+  const tag = interactionOrId?.user?.tag || id;
   let embed;
 
-  new EmbedBuilder().setTimestamp();
   if (authResponse.maintenance)
-    embed = basicEmbed(s(interaction).error.MAINTENANCE);
+    embed = basicEmbed(s(interactionOrId).error.MAINTENANCE);
   else if (authResponse.mfa) {
-    console.log(`${interaction.user.tag} needs 2FA code`);
+    console.log(`${tag} needs 2FA code`);
     if (authResponse.method === 'email') {
       if (isEphemeral)
         embed = basicEmbed(
-          s(interaction).info.MFA_EMAIL.f({
+          s(interactionOrId).info.MFA_EMAIL.f({
             e: escapeMarkdown(authResponse.email)
           })
         );
-      else embed = basicEmbed(s(interaction).info.MFA_EMAIL_HIDDEN);
-    } else embed = basicEmbed(s(interaction).info.MFA_GENERIC);
+      else embed = basicEmbed(s(interactionOrId).info.MFA_EMAIL_HIDDEN);
+    } else embed = basicEmbed(s(interactionOrId).info.MFA_GENERIC);
   } else if (authResponse.rateLimit) {
-    console.log(`${interaction.user.tag} got rate-limited`);
+    console.log(`${tag} got rate-limited`);
     if (typeof authResponse.rateLimit === 'number')
       embed = basicEmbed(
-        s(interaction).error.LOGIN_RATELIMIT_UNTIL.f({
+        s(interactionOrId).error.LOGIN_RATELIMIT_UNTIL.f({
           t: Math.ceil(authResponse.rateLimit / 1000)
         })
       );
-    else embed = basicEmbed(s(interaction).error.LOGIN_RATELIMIT);
+    else embed = basicEmbed(s(interactionOrId).error.LOGIN_RATELIMIT);
   } else {
     embed = basicEmbed(message);
 
     // two-strike system
-    const user = getUser(interaction.user.id);
+    const user = getUser(id);
     if (user) {
       user.authFailures++;
       saveUser(user);
@@ -988,13 +989,13 @@ export const switchAccountButtons = (
   interaction,
   customId,
   oneAccountButton = false,
-  id = interaction.user.id
+  id = interaction?.user?.id || interaction
 ) => {
   const json = removeDupeAccounts(id);
   if (!json || (json.accounts.length === 1 && !oneAccountButton)) return [];
   const accountNumbers = [...Array(json.accounts.length).keys()]
     .map((n) => n + 1)
-    .slice(0, 25);
+    .slice(0, 5);
   const hideIgn = getSetting(id, 'hideIgn');
 
   const buttons = [];
@@ -1014,38 +1015,7 @@ export const switchAccountButtons = (
     buttons.push(button);
   }
 
-  const MAX_BUTTONS_PER_ROW = 5;
-  const MAX_ACTION_ROWS = 5;
-
-  const actionRows = [];
-  let currentActionRow = new ActionRowBuilder();
-  let actionRowCount = 0;
-
-  for (let i = 0; i < buttons.length; i++) {
-    const button = buttons[i];
-
-    // Add button to current action row
-    currentActionRow.addComponents(button);
-
-    // If we've reached the max number of buttons per row, create a new action row
-    if (currentActionRow.components.length === MAX_BUTTONS_PER_ROW) {
-      actionRows.push(currentActionRow);
-      currentActionRow = new ActionRowBuilder();
-      actionRowCount++;
-
-      // If we've reached the max number of action rows, break out of the loop
-      if (actionRowCount === MAX_ACTION_ROWS) {
-        break;
-      }
-    }
-  }
-
-  // If there are any remaining buttons, add them to a new action row
-  if (currentActionRow.components.length > 0) {
-    actionRows.push(currentActionRow);
-  }
-
-  return actionRows;
+  return [new ActionRowBuilder().setComponents(...buttons)];
 };
 
 const alertFieldDescription = async (
@@ -1310,11 +1280,13 @@ export const settingsEmbed = (userSettings, interaction) => {
   for (const [setting, value] of Object.entries(userSettings)) {
     if (!settingIsVisible(setting)) continue;
 
-    const displayValue = humanifyValue(
+    let displayValue = humanifyValue(
       setting === 'locale' && !userSettings.localeForced ? 'Automatic' : value,
+      setting,
       interaction,
       true
     );
+
     embed.fields.push({
       name: settingName(setting, interaction),
       value: displayValue,

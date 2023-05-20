@@ -40,8 +40,8 @@ export const startAuthQueue = () => {
 
 export const queueUsernamePasswordLogin = async (id, username, password) => {
   if (!config.useLoginQueue)
-    return await redeemUsernamePassword(id, username, password);
-  if (useMultiqueue()) return await mqLoginUsernamePass(id, username, password);
+    return redeemUsernamePassword(id, username, password);
+  if (useMultiqueue()) return mqLoginUsernamePass(id, username, password);
 
   const c = queueCounter++;
   queue.push({
@@ -60,7 +60,7 @@ export const queueUsernamePasswordLogin = async (id, username, password) => {
 };
 
 export const queue2FACodeRedeem = async (id, code) => {
-  if (!config.useLoginQueue) return await redeem2FACode(id, code);
+  if (!config.useLoginQueue) return redeem2FACode(id, code);
   if (useMultiqueue())
     return { inQueue: false, ...(await mqLogin2fa(id, code)) };
 
@@ -79,7 +79,7 @@ export const queue2FACodeRedeem = async (id, code) => {
 };
 
 export const queueCookiesLogin = async (id, cookies) => {
-  if (!config.useLoginQueue) return await redeemCookies(id, cookies);
+  if (!config.useLoginQueue) return redeemCookies(id, cookies);
   if (useMultiqueue())
     return { inQueue: false, ...(await mqLoginCookies(id, cookies)) };
 
@@ -164,7 +164,7 @@ export const processAuthQueue = async () => {
 };
 
 export const getAuthQueueItemStatus = async (c) => {
-  if (useMultiqueue()) return await mqGetAuthQueueItemStatus(c);
+  if (useMultiqueue()) return mqGetAuthQueueItemStatus(c);
 
   // check if in queue
   let item = queue.find((i) => i.c === c);

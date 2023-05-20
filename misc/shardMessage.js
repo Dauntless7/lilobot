@@ -1,7 +1,8 @@
 import {
   checkAlerts,
   sendAlert,
-  sendCredentialsExpired
+  sendCredentialsExpired,
+  sendDailyShop
 } from '../discord/alerts.js';
 import { loadConfig } from './config.js';
 import { client, destroyTasks, scheduleTasks } from '../discord/bot.js';
@@ -63,6 +64,15 @@ const receiveShardMessage = async (message) => {
         message.account,
         message.alerts,
         message.expires,
+        false
+      );
+      break;
+    case 'dailyShop':
+      await sendDailyShop(
+        message.id,
+        message.shop,
+        message.channelId,
+        message.valorantUser,
         false
       );
       break;

@@ -10,20 +10,13 @@ export const loadConfig = (filename = 'config.json') => {
     loadedConfig = fs.readFileSync(filename, 'utf-8');
   } catch (e) {
     try {
-      loadedConfig = fs.readFileSync(filename, 'utf-8');
-    } catch (e) {
-      try {
-        fs.readFileSync(filename + '.example', 'utf-8');
-        console.error(
-          `You forgot to rename ${filename}.example to ${filename}!`
-        );
-        console.error(
-          `(Hint: If you can only see ${filename}, try enabling "file name extensions" in file explorer)`
-        );
-      } catch (e1) {
-        console.error(`Could not find ${filename}!`, e);
-      }
-      return;
+      fs.readFileSync(filename + '.example', 'utf-8');
+      console.error(`You forgot to rename ${filename}.example to ${filename}!`);
+      console.error(
+        `(Hint: If you can only see ${filename}, try enabling "file name extensions" in file explorer)`
+      );
+    } catch (e1) {
+      console.error(`Could not find ${filename}!`, e);
     }
     return;
   }

@@ -625,7 +625,7 @@ export const canCreateEmojis = (guild) =>
   guild &&
   guild.members.me &&
   guild.members.me.permissions.has(
-    PermissionsBitField.Flags.ManageGuildExpressions
+    PermissionsBitField.Flags.ManageEmojisAndStickers
   );
 export const emojiToString = (emoji) => emoji && `<:${emoji.name}:${emoji.id}>`;
 

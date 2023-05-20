@@ -19,6 +19,7 @@ import {
   alertsPageEmbed,
   authFailureMessage,
   basicEmbed,
+  renderOffers,
   VAL_COLOR_1
 } from './embed.js';
 import { client } from './bot.js';
@@ -27,6 +28,7 @@ import { l, s } from '../misc/languages.js';
 import { readUserJson, saveUser } from '../valorant/accountSwitcher.js';
 import { sendShardMessage } from '../misc/shardMessage.js';
 import { VPEmoji } from './emoji.js';
+import { getSetting } from '../misc/settings.js';
 
 /* Alert format: {
  *     uuid: skin uuid
@@ -126,7 +128,8 @@ export const checkAlerts = async () => {
         const accountCount = userJson.accounts.length;
         for (let i = 1; i <= accountCount; i++) {
           const rawUserAlerts = alertsForUser(id, i);
-          if (!rawUserAlerts || !rawUserAlerts.length) continue;
+          const dailyShopChannel = getSetting(id, 'dailyShop');
+          if (!rawUserAlerts?.length && !dailyShopChannel) continue;
 
           if (shouldWait) {
             await wait(config.delayBetweenAlerts); // to prevent being ratelimited
@@ -181,6 +184,9 @@ export const checkAlerts = async () => {
           } while (!offers.success);
 
           if (offers.success && offers.offers) {
+            if (dailyShopChannel && i === userJson.currentAccount)
+              await sendDailyShop(id, offers, dailyShopChannel, valorantUser);
+
             const positiveAlerts = userAlerts.filter((alert) =>
               offers.offers.includes(alert.uuid)
             );
@@ -363,6 +369,46 @@ export const sendCredentialsExpired = async (
     });
 };
 
+export const sendDailyShop = async (
+  id,
+  shop,
+  channelId,
+  valorantUser,
+  tryOnOtherShard = true
+) => {
+  const channel = await fetchChannel(channelId);
+  if (!channel) {
+    if (client.shard && tryOnOtherShard) {
+      sendShardMessage({
+        type: 'dailyShop',
+        id,
+        shop,
+        channelId,
+        valorantUser
+      });
+      return;
+    }
+
+    const user = await client.users.fetch(id).catch(() => {});
+    if (user)
+      console.error(
+        `Please tell ${user.tag} that the daily shop is out! (I can't find the channel where the alert was set up)`
+      );
+    return;
+  }
+
+  const rendered = await renderOffers(
+    shop,
+    id,
+    valorantUser,
+    await VPEmoji(id, channel)
+  );
+  await channel.send({
+    content: `<@${id}>`,
+    ...rendered
+  });
+};
+
 export const testAlerts = async (interaction) => {
   try {
     const channel =
@@ -394,7 +440,7 @@ export const fetchAlerts = async (interaction) => {
     interaction.channel || (await fetchChannel(interaction.channelId));
   const emojiString = await VPEmoji(interaction, channel);
 
-  return alertsPageEmbed(
+  return await alertsPageEmbed(
     interaction,
     await filteredAlertsForUser(interaction),
     0,
