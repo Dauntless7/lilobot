@@ -7,12 +7,18 @@ import { findKeyOfValue } from './util.js';
 export const settings = {
   dailyShop: {
     // stores false or channel id
-    set: (value, interaction) => (value ? interaction.channelId : false),
+    set: (value, interaction) =>
+      value === 'true' ? interaction.channelId : false,
     render: (value) => {
       if (value?.startsWith?.('#')) return value;
       return value ? `<#${value}>` : false;
     },
-    choices: (interaction) => [`#${interaction.channel?.name || 'DMs'}`, false],
+    choices: (interaction) => [
+      `#${
+        interaction.channel?.name || s(interaction).info.ALERT_IN_DM_CHANNEL
+      }`,
+      false
+    ],
     values: [true, false],
     default: false
   },
@@ -84,7 +90,7 @@ export const setSetting = (interaction, setting, value, force = false) => {
   // force = whether is set from /settings set
   const id = interaction.user.id;
   const json = readUserJson(id);
-  if (!json) return;
+  if (!json) return defaultSettings[setting]; // returns the default setting if the user does not have an account (this method may be a little bit funny, but it's better than an error)
 
   if (setting === 'locale') {
     if (force) {

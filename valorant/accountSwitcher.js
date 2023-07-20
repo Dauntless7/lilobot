@@ -126,6 +126,18 @@ export const deleteUser = (id, accountNumber) => {
 
 export const deleteWholeUser = (id) => {
   if (!fs.existsSync('data/users')) return;
+
+  // get the user's PUUIDs to delete the shop cache
+  const data = readUserJson(id);
+  if (data) {
+    const puuids = data.accounts.map((a) => a.puuid);
+    for (const puuid of puuids) {
+      try {
+        fs.unlinkSync(`data/shopCache/${puuid}.json`);
+      } catch (e) {}
+    }
+  }
+
   fs.unlinkSync('data/users/' + id + '.json');
 };
 

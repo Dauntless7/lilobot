@@ -1,9 +1,10 @@
 import { fetchChannel } from '../misc/util.js';
-import { VPEmoji } from '../discord/emoji.js';
+import { VPEmoji, KCEmoji } from '../discord/emoji.js';
 import {
   renderBundles,
   renderNightMarket,
-  renderOffers
+  renderOffers,
+  renderAccessoryOffers
 } from '../discord/embed.js';
 import { getUser } from './auth.js';
 import { getBundles, getNightMarket, getOffers } from './shop.js';
@@ -11,7 +12,8 @@ import { getBundles, getNightMarket, getOffers } from './shop.js';
 export const fetchShop = async (
   interaction,
   user,
-  targetId = interaction.user.id
+  targetId = interaction.user.id,
+  accessory = null
 ) => {
   // fetch the channel if not in cache
   const channel =
@@ -19,18 +21,28 @@ export const fetchShop = async (
 
   // start uploading emoji now
   const emojiPromise = VPEmoji(interaction, channel);
+  const KCEmojiPromise = KCEmoji(interaction, channel);
 
   let shop = await getOffers(targetId);
   if (shop.inQueue) shop = await waitForShopQueueResponse(shop);
 
   user = getUser(user);
-  return await renderOffers(
-    shop,
-    interaction,
-    user,
-    await emojiPromise,
-    targetId
-  );
+  if (accessory === 'daily' || !accessory) {
+    return await renderOffers(
+      shop,
+      interaction,
+      user,
+      await emojiPromise,
+      targetId
+    );
+  } else {
+    return await renderAccessoryOffers(
+      shop,
+      interaction,
+      user,
+      await KCEmojiPromise
+    );
+  }
 };
 
 export const fetchBundles = async (interaction) => {

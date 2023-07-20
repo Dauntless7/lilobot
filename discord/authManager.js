@@ -38,7 +38,7 @@ export const activeWaitForAuthQueueResponse = async (
     let embed;
     if (response.timestamp)
       embed = secondaryEmbed(
-        `Many people are using the bot! Please wait... (estimated: <t:${response.timestamp}:R>)`
+        s(interaction).error.QUEUE_WAIT.f({ t: response.timestamp })
       );
     else embed = secondaryEmbed('Processing...');
     if (replied) await interaction.editReply({ embeds: [embed] });
@@ -71,7 +71,11 @@ export const loginUsernamePassword = async (
     await interaction.editReply({
       embeds: [
         basicEmbed(
-          s(interaction).info.LOGGED_IN.f({ u: user.username }, interaction)
+          s(interaction).info.LOGGED_IN.f(
+            { u: user.username },
+            interaction,
+            false
+          )
         )
       ],
       ephemeral: true
@@ -136,7 +140,13 @@ export const login2FA = async (interaction, code, operationIndex = null) => {
     );
     await interaction.followUp({
       embeds: [
-        basicEmbed(s(interaction).info.LOGGED_IN.f({ u: user.username }))
+        basicEmbed(
+          s(interaction).info.LOGGED_IN.f(
+            { u: user.username },
+            interaction,
+            false
+          )
+        )
       ]
     });
   } else if (login.error) {

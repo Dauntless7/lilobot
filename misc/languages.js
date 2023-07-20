@@ -107,8 +107,8 @@ const importLanguage = (language) => {
 importLanguage(DEFAULT_LANG);
 
 // format a string
-String.prototype.f = function (args, interactionOrId = null) {
-  args = hideUsername(args, interactionOrId);
+String.prototype.f = function (args, interactionOrId = null, hideName = true) {
+  args = hideUsername(args, interactionOrId, hideName);
   let str = this;
   for (let i in args) str = str.replace(`{${i}}`, args[i]);
   return str;
@@ -152,7 +152,7 @@ const resolveDiscordLanguage = (input) => {
   return discLang;
 };
 
-const hideUsername = (args, interactionOrId) => {
+const hideUsername = (args, interactionOrId, hideName = true) => {
   if (!args.u) return { ...args, u: s(interactionOrId).info.NO_USERNAME };
   if (!interactionOrId) return args;
 
@@ -160,7 +160,7 @@ const hideUsername = (args, interactionOrId) => {
     typeof interactionOrId === 'string'
       ? interactionOrId
       : interactionOrId.user.id;
-  const hide = getSetting(id, 'hideIgn');
+  const hide = hideName ? getSetting(id, 'hideIgn') : false;
   if (!hide) return args;
 
   return { ...args, u: `||*${s(interactionOrId).info.HIDDEN_USERNAME}*||` };

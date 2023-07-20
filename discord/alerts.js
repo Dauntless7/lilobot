@@ -130,6 +130,12 @@ export const checkAlerts = async () => {
           const rawUserAlerts = alertsForUser(id, i);
           const dailyShopChannel = getSetting(id, 'dailyShop');
           if (!rawUserAlerts?.length && !dailyShopChannel) continue;
+          if (
+            !rawUserAlerts?.length &&
+            dailyShopChannel &&
+            i !== userJson.currentAccount
+          )
+            continue;
 
           if (shouldWait) {
             await wait(config.delayBetweenAlerts); // to prevent being ratelimited

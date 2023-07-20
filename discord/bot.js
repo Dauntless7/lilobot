@@ -4,6 +4,7 @@ import {
   ActionRowBuilder,
   MessageFlagsBitField,
   StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   ApplicationCommandOptionType,
   ButtonBuilder,
   ButtonStyle,
@@ -28,7 +29,8 @@ import {
   switchAccountButtons,
   skinCollectionPageEmbed,
   skinCollectionSingleEmbed,
-  valMaintenancesEmbeds
+  valMaintenancesEmbeds,
+  collectionOfWeaponEmbed
 } from './embed.js';
 import {
   authUser,
@@ -57,7 +59,7 @@ import {
   removeAlert,
   testAlerts
 } from './alerts.js';
-import { RadEmoji, VPEmoji } from './emoji.js';
+import { RadEmoji, VPEmoji, KCEmoji } from './emoji.js';
 import { queueCookiesLogin, startAuthQueue } from '../valorant/authQueue.js';
 import {
   login2FA,
@@ -76,7 +78,10 @@ import {
   initProxyManager,
   removeAlertActionRow,
   skinNameAndEmoji,
-  valNamesToDiscordNames
+  valNamesToDiscordNames,
+  WeaponTypeUuid,
+  WeaponType,
+  fetch
 } from '../misc/util.js';
 import config, { loadConfig, saveConfig } from '../misc/config.js';
 import { localError, localLog, sendConsoleOutput } from '../misc/logger.js';
@@ -112,7 +117,7 @@ import {
   settings
 } from '../misc/settings.js';
 import fuzzysort from 'fuzzysort';
-import { renderCollection } from '../valorant/inventory.js';
+import { renderCollection, getSkins } from '../valorant/inventory.js';
 import { getLoadout } from '../valorant/inventory.js';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
@@ -382,6 +387,16 @@ const commands = [
     name: 'collection',
     description: 'Show off your skin collection!',
     options: [
+      {
+        type: ApplicationCommandOptionType.String,
+        name: 'weapon',
+        description: 'Optional: see all your skins for a specific weapon',
+        required: false,
+        choices: Object.values(WeaponType).map((weaponName) => ({
+          name: weaponName,
+          value: weaponName
+        }))
+      },
       {
         type: ApplicationCommandOptionType.User,
         name: 'user',
@@ -731,8 +746,7 @@ client.on('interactionCreate', async (interaction) => {
       config.status ||
       'The bot is currently under maintenance! Please be patient.';
   else if (!areAllShardsReady())
-    maintenanceMessage =
-      'The bot is still starting up! Please wait a few seconds and try again. (Shards loading...)';
+    maintenanceMessage = s(interaction).info.SHARDS_LOADING;
   if (maintenanceMessage) {
     if (interaction.isAutocomplete())
       return await interaction.respond([
@@ -887,17 +901,6 @@ client.on('interactionCreate', async (interaction) => {
 
           break;
         }
-        case 'lilo': {
-          await interaction.reply({
-            embeds: [
-              {
-                description: 'your mom',
-                color: 0xfde3e7
-              }
-            ]
-          });
-          break;
-        }
         case 'nightmarket': {
           if (!valorantUser)
             return await interaction.reply({
@@ -927,6 +930,7 @@ client.on('interactionCreate', async (interaction) => {
             interaction.channel || (await fetchChannel(interaction.channelId));
           const VPEmojiPromise = VPEmoji(interaction, channel);
           const RadEmojiPromise = RadEmoji(interaction, channel);
+          const KCEmojiPromise = KCEmoji(interaction, channel);
 
           const balance = await getBalance(interaction.user.id);
 
@@ -941,6 +945,7 @@ client.on('interactionCreate', async (interaction) => {
 
           const theVPEmoji = await VPEmojiPromise;
           const theRadEmoji = (await RadEmojiPromise) || '';
+          const theKCEmoji = (await KCEmojiPromise) || '';
 
           await interaction.followUp({
             embeds: [
@@ -960,6 +965,11 @@ client.on('interactionCreate', async (interaction) => {
                   {
                     name: s(interaction).info.RADIANITE,
                     value: `${theRadEmoji} ${balance.rad}`,
+                    inline: true
+                  },
+                  {
+                    name: s(interaction).info.KCREDIT,
+                    value: `${theKCEmoji} ${balance.kc}`,
                     inline: true
                   }
                 ]
@@ -1341,7 +1351,12 @@ client.on('interactionCreate', async (interaction) => {
 
           await defer(interaction);
 
-          const message = await renderCollection(interaction, targetUser.id);
+          const weaponName = interaction.options.getString('weapon');
+          const message = await renderCollection(
+            interaction,
+            targetUser.id,
+            weaponName
+          );
           await interaction.followUp(message);
 
           console.log(`Sent ${targetUser.tag}'s collection!`);
@@ -1446,7 +1461,8 @@ client.on('interactionCreate', async (interaction) => {
                 basicEmbed(
                   s(interaction).info.ACCOUNT_ALREADY_SELECTED.f(
                     { u: valorantUser.username },
-                    interaction
+                    interaction,
+                    false
                   )
                 )
               ],
@@ -1500,6 +1516,11 @@ client.on('interactionCreate', async (interaction) => {
           break;
         }
         case 'valstatus': {
+          if (!valorantUser)
+            return await interaction.reply({
+              embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
+              ephemeral: true
+            });
           await defer(interaction);
 
           const json = await fetchMaintenances(valorantUser.region);
@@ -1560,9 +1581,15 @@ client.on('interactionCreate', async (interaction) => {
   } else if (interaction.isStringSelectMenu()) {
     try {
       console.log(
-        `${interaction.user.tag} selected an option from the dropdown`
+        `${interaction.user.tag} selected an option from the dropdown with id ${interaction.customId}`
       );
-      switch (interaction.customId) {
+      let selectType = interaction.customId;
+      if (
+        interaction.values[0].startsWith('levels') ||
+        interaction.values[0].startsWith('chromas')
+      )
+        selectType = 'get-level-video';
+      switch (selectType) {
         case 'skin-select': {
           if (interaction.message.interaction.user.id !== interaction.user.id) {
             return await interaction.reply({
@@ -1653,16 +1680,81 @@ client.on('interactionCreate', async (interaction) => {
           const emoji = await VPEmoji(interaction, channel);
           const message = await renderBundle(bundle, interaction, emoji);
 
-          await interaction.update({
-            embeds: message.embeds,
-            components: []
-          });
+          await interaction.update(message);
 
           break;
         }
         case 'set-setting': {
           await handleSettingDropdown(interaction);
           break;
+        }
+        case 'select-skin-with-level': {
+          let skinUuid = interaction.values[0];
+          let skin = await getSkin(skinUuid);
+          const levelSelector = new StringSelectMenuBuilder()
+            .setCustomId(`select-skin-level`)
+            .setPlaceholder(s(interaction).info.SELECT_LEVEL_OF_SKIN);
+
+          if (!skin) {
+            const req = await fetch(
+              `https://valorant-api.com/v1/weapons/skins/${skinUuid}?language=all`
+            );
+            skin = JSON.parse(req.body).data;
+            skinUuid = skin.levels[0].uuid;
+          }
+
+          for (let i = 0; i < skin.levels.length; i++) {
+            const level = skin.levels[i];
+            if (level.streamedVideo) {
+              let skinName = l(level.displayName, interaction);
+              if (skinName.length > 100)
+                skinName = skinName.slice(0, 96) + ' ...';
+              levelSelector.addOptions(
+                new StringSelectMenuOptionBuilder()
+                  .setLabel(`${skinName}`)
+                  .setValue(`levels/${level.uuid}/${skinUuid}`)
+              );
+            }
+          }
+
+          for (let i = 0; i < skin.chromas.length; i++) {
+            const chromas = skin.chromas[i];
+            if (chromas.streamedVideo) {
+              let chromaName = l(chromas.displayName, interaction);
+              if (chromaName.length > 100)
+                chromaName = chromaName.slice(0, 96) + ' ...';
+              levelSelector.addOptions(
+                new StringSelectMenuOptionBuilder()
+                  .setLabel(`${chromaName}`)
+                  .setValue(`chromas/${chromas.uuid}/${skinUuid}`)
+              );
+            }
+          }
+
+          await interaction.reply({
+            components: [new ActionRowBuilder().addComponents(levelSelector)],
+            ephemeral: true
+          });
+          break;
+        }
+        case 'get-level-video': {
+          const [type, uuid, skinUuid] = interaction.values[0].split('/');
+          const rawSkin = await getSkin(skinUuid);
+          const skin = rawSkin[type].filter((x) => x.uuid === uuid);
+          const name = l(skin[0].displayName, interaction);
+          const baseLink = 'https://embed.arthurdev.web.tr/s';
+          let link;
+          config.viewerWithSite
+            ? (link =
+                baseLink +
+                `?link=${skin[0].streamedVideo}&title=${encodeURI(
+                  client.user.username
+                )}`)
+            : (link = skin[0].streamedVideo);
+          await interaction.reply({
+            content: `\u200b[${name}](${link})`,
+            ephemeral: true
+          });
         }
       }
     } catch (e) {
@@ -1831,6 +1923,79 @@ client.on('interactionCreate', async (interaction) => {
               loadoutResponse
             )
           );
+      } else if (interaction.customId.startsWith('clwpage')) {
+        const [, weaponTypeIndex, id, pageIndex] =
+          interaction.customId.split('/');
+        const weaponType =
+          Object.values(WeaponTypeUuid)[parseInt(weaponTypeIndex)];
+
+        let user;
+        if (id !== interaction.user.id) user = getUser(id);
+        else user = valorantUser;
+
+        const skinsResponse = await getSkins(user);
+        if (!skinsResponse.success)
+          return await interaction.reply(
+            authFailureMessage(
+              interaction,
+              skinsResponse,
+              s(interaction).error.AUTH_ERROR_COLLECTION,
+              id !== interaction.user.id
+            )
+          );
+
+        await interaction.update(
+          await collectionOfWeaponEmbed(
+            interaction,
+            id,
+            user,
+            weaponType,
+            skinsResponse.skins,
+            parseInt(pageIndex)
+          )
+        );
+      } else if (interaction.customId.startsWith('clwswitch')) {
+        const [, weaponTypeIndex, switchTo, id] =
+          interaction.customId.split('/');
+        const weaponType =
+          Object.values(WeaponTypeUuid)[parseInt(weaponTypeIndex)];
+        const switchToPage = switchTo === 'p';
+
+        let user;
+        if (id !== interaction.user.id) user = getUser(id);
+        else user = valorantUser;
+
+        const skinsResponse = await getSkins(user);
+        if (!skinsResponse.success)
+          return await interaction.reply(
+            authFailureMessage(
+              interaction,
+              skinsResponse,
+              s(interaction).error.AUTH_ERROR_COLLECTION,
+              id !== interaction.user.id
+            )
+          );
+
+        if (switchToPage)
+          await interaction.update(
+            await collectionOfWeaponEmbed(
+              interaction,
+              id,
+              user,
+              weaponType,
+              skinsResponse.skins
+            )
+          );
+        else
+          await interaction.update(
+            await singleWeaponEmbed(
+              interaction,
+              id,
+              user,
+              weaponType,
+              skinsResponse.skins
+            )
+          );
       } else if (interaction.customId.startsWith('viewbundle')) {
         const [, id, uuid] = interaction.customId.split('/');
 
@@ -1869,46 +2034,50 @@ client.on('interactionCreate', async (interaction) => {
             true
           );
 
-        const newActionRows = [];
         for (const actionRow of message.components) {
-          const newActionRow = new ActionRowBuilder();
-
           for (const component of actionRow.components) {
-            const newButton = new ButtonBuilder(component.data);
-
-            if (component.customId === interaction.customId) {
-              newButton.setLabel(s(interaction).info.LOADING);
-              newButton.setStyle(ButtonStyle.Primary);
-              newButton.setEmoji('⏳');
+            if (component.data.custom_id === interaction.customId) {
+              component.data.label = `${s(interaction).info.LOADING}`;
+              component.data.style = ButtonStyle.Primary;
+              component.data.disabled = true;
+              component.data.emoji = { name: '⏳' };
             }
-
-            newActionRow.addComponents(newButton);
           }
-
-          newActionRows.push(newActionRow);
         }
 
         await interaction.update({
           embeds: message.embeds,
-          components: newActionRows
+          components: message.components
         });
 
-        const success = switchAccount(
-          interaction.user.id,
-          parseInt(accountIndex)
-        );
-        if (!success)
-          return await interaction.followUp({
-            embeds: [basicEmbed(s(interaction).error.ACCOUNT_NOT_FOUND)],
-            ephemeral: true
-          });
+        if (accountIndex !== 'accessory' && accountIndex !== 'daily') {
+          const success = switchAccount(
+            interaction.user.id,
+            parseInt(accountIndex)
+          );
+          if (!success)
+            return await interaction.followUp({
+              embeds: [basicEmbed(s(interaction).error.ACCOUNT_NOT_FOUND)],
+              ephemeral: true
+            });
+        }
 
         let newMessage;
         switch (customId) {
           case 'shop':
             newMessage = await fetchShop(
               interaction,
-              getUser(interaction.user.id)
+              getUser(interaction.user.id),
+              interaction.user.id,
+              'daily'
+            );
+            break;
+          case 'accessoryshop':
+            newMessage = await fetchShop(
+              interaction,
+              getUser(interaction.user.id),
+              interaction.user.id,
+              'accessory'
             );
             break;
           case 'nm':
@@ -1926,6 +2095,23 @@ client.on('interactionCreate', async (interaction) => {
           case 'cl':
             newMessage = await renderCollection(interaction);
             break;
+        }
+        /* else */ if (customId.startsWith('clw')) {
+          let valorantUser = getUser(interaction.user.id);
+          const [, weaponTypeIndex] = interaction.customId
+            .split('/')[1]
+            .split('-');
+          const weaponType =
+            Object.values(WeaponTypeUuid)[parseInt(weaponTypeIndex)];
+          newMessage = await collectionOfWeaponEmbed(
+            interaction,
+            interaction.user.id,
+            valorantUser,
+            weaponType,
+            (
+              await getSkins(valorantUser)
+            ).skins
+          );
         }
 
         if (!newMessage.components)
@@ -1959,8 +2145,7 @@ client.on('interactionCreate', async (interaction) => {
             name: result.obj.names[
               discToValLang[interaction.locale] || DEFAULT_VALORANT_LANG
             ],
-            value: result.obj.names[DEFAULT_VALORANT_LANG],
-            nameLocalizations: valNamesToDiscordNames(result.obj.names) // does this even work?
+            value: result.obj.names[DEFAULT_VALORANT_LANG]
           }))
         );
       } else if (interaction.commandName === 'bundle') {
@@ -1976,8 +2161,7 @@ client.on('interactionCreate', async (interaction) => {
             name: result.obj.names[
               discToValLang[interaction.locale] || DEFAULT_VALORANT_LANG
             ],
-            value: result.obj.names[DEFAULT_VALORANT_LANG],
-            nameLocalizations: valNamesToDiscordNames(result.obj.names) // does this even work?
+            value: result.obj.names[DEFAULT_VALORANT_LANG]
           }))
         );
       } else if (
@@ -2003,7 +2187,8 @@ client.on('interactionCreate', async (interaction) => {
         const filteredValues = fuzzysort.go(focusedValue, values, {
           key: 'name',
           threshold: -1000,
-          limit: 5,
+          limit:
+            config.maxAccountsPerUser <= 10 ? config.maxAccountsPerUser : 10,
           all: true
         });
 
