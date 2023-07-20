@@ -2108,9 +2108,7 @@ client.on('interactionCreate', async (interaction) => {
             interaction.user.id,
             valorantUser,
             weaponType,
-            (
-              await getSkins(valorantUser)
-            ).skins
+            (await getSkins(valorantUser)).skins
           );
         }
 

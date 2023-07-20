@@ -85,7 +85,7 @@ export const getOffers = async (id, account = null) => {
       Math.floor(Date.now() / 1000) +
       resp.shop.SkinsPanelLayout.SingleItemOffersRemainingDurationInSeconds,
     accessory: {
-      offers: r(esp.shop.AccessoryStore.AccessoryStoreOffers || []).map(
+      offers: (resp.shop.AccessoryStore.AccessoryStoreOffers || []).map(
         (rawAccessory) => {
           return {
             cost: rawAccessory.Offer.Cost[

@@ -110,7 +110,7 @@ const createEmoji = async (guild, name, filenameOrUrl) => {
   console.log(`Uploading emoji ${name} in ${guild.name}...`);
   try {
     const attachment = await resolveFilenameOrUrl(filenameOrUrl);
-    return guild.emojis.create({ name, attachment });
+    return await guild.emojis.create({ name, attachment });
   } catch (e) {
     console.error(
       `Could not create ${name} emoji in ${guild.name}! Either I don't have the right role or there are no more emoji slots`
@@ -121,7 +121,7 @@ const createEmoji = async (guild, name, filenameOrUrl) => {
 
 const resolveFilenameOrUrl = async (filenameOrUrl) => {
   if (filenameOrUrl.startsWith('http')) return filenameOrUrl;
-  return asyncReadFile(filenameOrUrl);
+  return await asyncReadFile(filenameOrUrl);
 };
 
 const updateEmojiCache = async (guild) => {
