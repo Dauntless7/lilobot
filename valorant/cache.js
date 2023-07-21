@@ -193,45 +193,12 @@ export const getSkinList = async (gameVersion) => {
     weapons[weapon.uuid] = {
       uuid: weapon.uuid,
       names: weapon.displayName,
-      icon: weapon.displayIcon
+      icon: weapon.displayIcon,
+      defaultSkinUuid: weapon.defaultSkinUuid
     };
     for (const skin of weapon.skins) {
       const levelOne = skin.levels[0];
-      skins = { version: gameVersion };
-      weapons = {};
-      for (const weapon of json.data) {
-        weapons[weapon.uuid] = {
-          uuid: weapon.uuid,
-          names: weapon.displayName,
-          icon: weapon.displayIcon,
-          defaultSkinUuid: weapon.defaultSkinUuid
-        };
-        for (const skin of weapon.skins) {
-          const levelOne = skin.levels[0];
 
-          let icon;
-          if (skin.themeUuid === '5a629df4-4765-0214-bd40-fbb96542941f') {
-            // default skins
-            icon = skin.chromas[0] && skin.chromas[0].fullRender;
-          } else {
-            for (let i = 0; i < skin.levels.length; i++) {
-              if (skin.levels[i] && skin.levels[i].displayIcon) {
-                icon = skin.levels[i].displayIcon;
-                break;
-              }
-            }
-          }
-          if (!icon) icon = null;
-          skins[levelOne.uuid] = {
-            uuid: levelOne.uuid,
-            skinUuid: skin.uuid,
-            names: skin.displayName,
-            icon: icon,
-            rarity: skin.contentTierUuid,
-            defaultSkinUuid: weapon.defaultSkinUuid
-          };
-        }
-      }
       let icon;
       if (skin.themeUuid === '5a629df4-4765-0214-bd40-fbb96542941f') {
         // default skins
