@@ -152,7 +152,7 @@ client.on('ready', async () => {
 
   scheduleTasks();
 
-  await client.user.setActivity('your store!', { type: ActivityType.Watching });
+  client.user.setActivity('your mom', { type: ActivityType.Watching });
 
   // deploy commands if different
   if (
