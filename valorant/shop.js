@@ -78,30 +78,22 @@ export const getOffers = async (id, account = null) => {
   const resp = await getShop(id, account);
   if (!resp.success) return resp;
 
-  return await easterEggOffers(id, account, {
-    success: true,
-    offers: resp.shop.SkinsPanelLayout.SingleItemOffers,
-    expires:
-      Math.floor(Date.now() / 1000) +
-      resp.shop.SkinsPanelLayout.SingleItemOffersRemainingDurationInSeconds,
-    accessory: {
-      offers: (resp.shop.AccessoryStore.AccessoryStoreOffers || []).map(
-        (rawAccessory) => {
-          return {
-            cost: rawAccessory.Offer.Cost[
-              '85ca954a-41f2-ce94-9b45-8ca3dd39a00d'
-            ],
-            rewards: rawAccessory.Offer.Rewards,
-            contractID: rawAccessory.ContractID
-          };
+    return await easterEggOffers(id, account, {
+        success: true,
+        offers: resp.shop.SkinsPanelLayout.SingleItemOffers,
+        expires: Math.floor(Date.now() / 1000) + resp.shop.SkinsPanelLayout.SingleItemOffersRemainingDurationInSeconds,
+        accessory: {
+            offers: (resp.shop.AccessoryStore.AccessoryStoreOffers || []).map(rawAccessory => {
+                return {
+                    cost: rawAccessory.Offer.Cost["85ca954a-41f2-ce94-9b45-8ca3dd39a00d"],
+                    rewards: rawAccessory.Offer.Rewards,
+                    contractID: rawAccessory.ContractID
+                }
+            }),
+            expires: Math.floor(Date.now() / 1000) + resp.shop.AccessoryStore.AccessoryStoreRemainingDurationInSeconds
         }
-      ),
-      expires:
-        Math.floor(Date.now() / 1000) +
-        resp.shop.AccessoryStore.AccessoryStoreRemainingDurationInSeconds
-    }
-  });
-};
+    });
+}
 
 export const getBundles = async (id, account = null) => {
   const shopCache = getShopCache(getPuuid(id, account), 'bundles');
@@ -177,10 +169,8 @@ export const getNextNightMarketTimestamp = async () => {
   if (nextNMTimestampUpdated > Date.now() - 5 * 60 * 1000)
     return nextNMTimestamp;
 
-  // thx Mistral for maintaining this!
-  const req = await fetch(
-    'https://gist.githubusercontent.com/blongnh/17bb10db4bb77df5530024bcb0385042/raw/nmdate.txt'
-  );
+    // thx Mistral for maintaining this!
+    const req = await fetch("https://gist.githubusercontent.com/mistralwz/17bb10db4bb77df5530024bcb0385042/raw/nmdate.txt");
 
   const [timestamp] = req.body.split('\n');
   nextNMTimestamp = parseInt(timestamp);
@@ -358,12 +348,12 @@ const easterEggOffers = async (id, account, offers) => {
         _offers.offers[i] = defaultSkin.uuid;
       }
 
-      user.lastSawEasterEgg = Date.now();
-      saveUser(user);
-      return _offers;
+            user.lastSawEasterEgg = Date.now();
+            saveUser(user);
+            return _offers
+        }
+    } catch (e) {
+        console.error(e);
     }
-  } catch (e) {
-    console.error(e);
-  }
-  return offers;
-};
+    return offers;
+}
