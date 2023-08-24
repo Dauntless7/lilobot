@@ -1199,6 +1199,23 @@ client.on('interactionCreate', async (interaction) => {
               ]
             });
           }
+          break;
+        }
+        case 'login': {
+          await defer(interaction, true);
+
+          const json = readUserJson(interaction.user.id);
+          if (json && json.accounts.length >= config.maxAccountsPerUser) {
+            return await interaction.followUp({
+              embeds: [
+                basicEmbed(
+                  s(interaction).error.TOO_MANY_ACCOUNTS.f({
+                    n: config.maxAccountsPerUser
+                  })
+                )
+              ]
+            });
+          }
 
           const username = interaction.options.get('username').value;
           const password = interaction.options.get('password').value;
@@ -1531,9 +1548,8 @@ client.on('interactionCreate', async (interaction) => {
         case 'info': {
           let guildCount, userCount;
           if (client.shard) {
-            const guildCounts = await client.shard.fetchClientValues(
-              'guilds.cache.size'
-            );
+            const guildCounts =
+              await client.shard.fetchClientValues('guilds.cache.size');
             guildCount = guildCounts.reduce(
               (acc, guildCount) => acc + guildCount,
               0
