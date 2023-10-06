@@ -36,9 +36,11 @@ export const loadConfig = (filename = 'config.json') => {
   applyConfig(loadedConfig, 'token', 'token goes here');
   applyConfig(loadedConfig, 'fetchSkinPrices', true);
   applyConfig(loadedConfig, 'fetchSkinRarities', true);
+  applyConfig(loadedConfig, 'localiseText', true);
   applyConfig(loadedConfig, 'localiseSkinNames', true);
   applyConfig(loadedConfig, 'linkItemImage', true);
-  applyConfig(loadedConfig, 'viewerWithSite', true);
+  applyConfig(loadedConfig, 'videoViewerWithSite', true);
+  applyConfig(loadedConfig, 'imageViewerWithSite', false);
   applyConfig(loadedConfig, 'useEmojisFromServer', '');
   applyConfig(loadedConfig, 'refreshSkins', '10 0 0 * * *');
   applyConfig(loadedConfig, 'checkGameVersion', '*/15 * * * *');

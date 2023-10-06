@@ -403,6 +403,9 @@ export const sendDailyShop = async (
     return;
   }
 
+  const shouldPing = getSetting(id, 'pingOnAutoDailyShop');
+  const content = shouldPing ? `<@${id}>` : null;
+
   const rendered = await renderOffers(
     shop,
     id,
@@ -410,7 +413,7 @@ export const sendDailyShop = async (
     await VPEmoji(id, channel)
   );
   await channel.send({
-    content: `<@${id}>`,
+    content,
     ...rendered
   });
 };

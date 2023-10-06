@@ -95,6 +95,7 @@ export const skinChosenEmbed = async (interaction, skin) => {
 export const renderOffers = async (shop, interaction, valorantUser, VPemoji, otherId=null) => {
     const forOtherUser = otherId && otherId !== interaction.user.id;
     const otherUserMention = `<@${otherId}>`;
+    const targetId = forOtherUser ? otherId : interaction?.user?.id;
 
     if(!shop.success) {
         let errorText;
@@ -143,10 +144,10 @@ export const renderOffers = async (shop, interaction, valorantUser, VPemoji, oth
     }
 
     let components;
-    if(forOtherUser){
+    if(forOtherUser && !getSetting(otherId, "othersCanUseAccountButtons")) {
         components = null;
     } else {
-        components = switchAccountButtons(interaction, "shop", true, "daily");
+        components = switchAccountButtons(interaction, "shop", true, "daily", targetId);
     }
 
     const levels = await getSkinLevels(shop.offers, interaction);
@@ -157,7 +158,7 @@ export const renderOffers = async (shop, interaction, valorantUser, VPemoji, oth
     };
 }
 
-export const renderAccessoryOffers = async (shop, interaction, valorantUser, KCemoji) => {
+export const renderAccessoryOffers = async (shop, interaction, valorantUser, KCemoji, id=interaction?.user?.id) => {
 
     if(!shop.success) {
         let errorText = s(interaction).error.AUTH_ERROR_SHOP;
@@ -165,7 +166,19 @@ export const renderAccessoryOffers = async (shop, interaction, valorantUser, KCe
         return authFailureMessage(interaction, shop, errorText);
     }
 
-    let headerText = s(interaction).info.ACCESSORY_SHOP_HEADER.f({ u: valorantUser.username, t: shop.accessory.expires }, interaction);
+    const forOtherUser = id && id !== interaction.user.id;
+    const otherUserMention = `<@${id}>`;
+
+    let headerText;
+    if(forOtherUser) {
+        const json = readUserJson(id);
+
+        let usernameText = otherUserMention;
+        if(json.accounts.length > 1) usernameText += ' ' + s(interaction).info.SWITCH_ACCOUNT_BUTTON.f({n: json.currentAccount});
+
+        headerText = s(interaction).info.ACCESSORY_SHOP_HEADER.f({ u: usernameText, t: shop.accessory.expires });
+    }
+    else headerText = s(interaction).info.ACCESSORY_SHOP_HEADER.f({ u: valorantUser.username, t: shop.accessory.expires }, interaction);
 
     const embeds = [headerEmbed(headerText)];
     for (const offer of shop.accessory.offers) {
@@ -212,7 +225,7 @@ export const renderAccessoryOffers = async (shop, interaction, valorantUser, KCe
         }
     }
 
-    let components = switchAccountButtons(interaction, "accessoryshop", true, "accessory");
+    let components = switchAccountButtons(interaction, "accessoryshop", true, "accessory", id);
 
     return {
         embeds, components
@@ -362,7 +375,7 @@ export const renderNightMarket = async (market, interaction, valorantUser, emoji
     };
 }
 
-export const renderBattlepass = async (battlepass, targetlevel, interaction) => {
+export const renderBattlepass = async (battlepass, targetlevel, interaction, targetId=interaction.user.id) => {
     if(!battlepass.success) return authFailureMessage(interaction, battlepass, s(interaction).error.AUTH_ERROR_BPASS);
     if(battlepass.nextReward.rewardType === "EquippableCharmLevel"){
         battlepass.nextReward.rewardType = s(interaction).battlepass.GUN_BUDDY;
@@ -382,14 +395,29 @@ export const renderBattlepass = async (battlepass, targetlevel, interaction) => 
     if(battlepass.nextReward.rewardName === undefined) {
         battlepass.nextReward.rewardName = "Name not found"
     }
-    const user = getUser(interaction.user.id);
+    const user = getUser(targetId);
 
     let embeds = []
     if(battlepass.bpdata.progressionLevelReached < 55) {
+
+        const forOtherUser = targetId && targetId !== interaction.user.id;
+        const otherUserMention = `<@${targetId}>`;
+    
+        let headerText;
+        if(forOtherUser) {
+            const json = readUserJson(targetId);
+    
+            let usernameText = otherUserMention;
+            if(json.accounts.length > 1) usernameText += ' ' + s(interaction).info.SWITCH_ACCOUNT_BUTTON.f({n: json.currentAccount});
+
+            headerText = s(interaction).battlepass.TIER_HEADER.f({u: usernameText})
+        }
+        else headerText = s(interaction).battlepass.TIER_HEADER.f({u: user.username}, interaction)
+
         embeds.push({
             title: s(interaction).battlepass.CALCULATIONS_TITLE,
             thumbnail: {url: thumbnails[Math.floor(Math.random()*thumbnails.length)]},
-            description: `${s(interaction).battlepass.TIER_HEADER.f({u: user.username}, interaction)}\n${createProgressBar(battlepass.xpneeded, battlepass.bpdata.progressionTowardsNextLevel, battlepass.bpdata.progressionLevelReached)}`,
+            description: `${headerText}\n${createProgressBar(battlepass.xpneeded, battlepass.bpdata.progressionTowardsNextLevel, battlepass.bpdata.progressionLevelReached)}`,
             color: VAL_COLOR_1,
             fields: [
                 {
@@ -463,7 +491,7 @@ export const renderBattlepass = async (battlepass, targetlevel, interaction) => 
                 },
             ],
             thumbnail: {
-              url: battlepass.nextReward.rewardIcon,
+                url: battlepass.nextReward.rewardIcon,
             },
         });
     } else {
@@ -473,7 +501,7 @@ export const renderBattlepass = async (battlepass, targetlevel, interaction) => 
         })
     }
 
-    const components = switchAccountButtons(interaction, "bp");
+    const components = switchAccountButtons(interaction, "bp", false, false, targetId);
 
     return {embeds, components};
 }
@@ -670,7 +698,7 @@ export const skinCollectionSingleEmbed = async (interaction, id, user, {loadout,
     }
 
     const components = [new ActionRowBuilder().addComponents(collectionSwitchEmbedButton(interaction, true, id)),]
-    if(!someoneElseUsedCommand) components.push(...switchAccountButtons(interaction, "cl", false, id))
+    if(!someoneElseUsedCommand) components.push(...switchAccountButtons(interaction, "cl", false, false, id))
     
     const levels = await getSkinLevels(skinsUuid.map(item=>item.uuid), interaction);
     if(levels) components.unshift(levels);
@@ -736,7 +764,7 @@ export const skinCollectionPageEmbed = async (interaction, id, user, {loadout, f
     firstRowButtons.push(...(pageButtons("clpage", id, pageIndex, pages.length).components))
 
     const components = [new ActionRowBuilder().setComponents(...firstRowButtons)]
-    if(!someoneElseUsedCommand) components.push(...switchAccountButtons(interaction, "cl", false, id));
+    if(!someoneElseUsedCommand) components.push(...switchAccountButtons(interaction, "cl", false, false, id));
 
     return {embeds, components}
 }
@@ -809,7 +837,7 @@ export const collectionOfWeaponEmbed = async (interaction, id, user, weaponTypeU
 
     const actionRows = [];
     if(maxPages > 1) actionRows.push(pageButtons(`clwpage/${weaponTypeIndex}`, id, pageIndex, maxPages));
-    if(!someoneElseUsedCommand) actionRows.push(...switchAccountButtons(interaction, `clw-${weaponTypeIndex}`, false, id));
+    if(!someoneElseUsedCommand) actionRows.push(...switchAccountButtons(interaction, `clw-${weaponTypeIndex}`, false, false, id));
 
     const levels = await getSkinLevels(filteredSkins.slice(pageIndex * embedsPerPage, (pageIndex + 1) * embedsPerPage).map(item=>item.uuid), interaction);
     if(levels) actionRows.unshift(levels);

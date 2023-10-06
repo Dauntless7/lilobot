@@ -66,7 +66,8 @@ export const getSkins = async (user) => {
     }
   }
 
-  if (!user.auth) throw 'You got logged out! Please /login again.';
+  const authResult = await authUser(user.id);
+  if (!authResult.success) return authResult;
 
   const data = await getEntitlements(
     user,

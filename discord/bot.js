@@ -1716,18 +1716,17 @@ client.on('interactionCreate', async (interaction) => {
             }
           }
 
-          for (let i = 0; i < skin.chromas.length; i++) {
+          for (let i = 1; i < skin.chromas.length; i++) {
+            // this change skips the default version of the skin because it is the same as level 1 (may work incorrectly, let me know if so)
             const chromas = skin.chromas[i];
-            if (chromas.streamedVideo) {
-              let chromaName = l(chromas.displayName, interaction);
-              if (chromaName.length > 100)
-                chromaName = chromaName.slice(0, 96) + ' ...';
-              levelSelector.addOptions(
-                new StringSelectMenuOptionBuilder()
-                  .setLabel(`${chromaName}`)
-                  .setValue(`chromas/${chromas.uuid}/${skinUuid}`)
-              );
-            }
+            let chromaName = l(chromas.displayName, interaction);
+            if (chromaName.length > 100)
+              chromaName = chromaName.slice(0, 96) + ' ...';
+            levelSelector.addOptions(
+              new StringSelectMenuOptionBuilder()
+                .setLabel(`${chromaName}`)
+                .setValue(`chromas/${chromas.uuid}/${skinUuid}`)
+            );
           }
 
           await interaction.reply({
@@ -1741,15 +1740,25 @@ client.on('interactionCreate', async (interaction) => {
           const rawSkin = await getSkin(skinUuid);
           const skin = rawSkin[type].filter((x) => x.uuid === uuid);
           const name = l(skin[0].displayName, interaction);
-          const baseLink = 'https://embed.arthurdev.web.tr/s';
+          const baseLink = 'https://embed.sypnex.net/';
           let link;
-          config.viewerWithSite
-            ? (link =
-                baseLink +
-                `?link=${skin[0].streamedVideo}&title=${encodeURI(
-                  client.user.username
-                )}`)
-            : (link = skin[0].streamedVideo);
+          if (skin[0].streamedVideo)
+            config.videoViewerWithSite
+              ? (link =
+                  baseLink +
+                  `s?link=${skin[0].streamedVideo}&title=${encodeURI(
+                    client.user.username
+                  )}`)
+              : (link = skin[0].streamedVideo);
+          else
+            config.imageViewerWithSite
+              ? (link =
+                  baseLink +
+                  `d?link=${skin[0].displayIcon}&title=${encodeURI(
+                    client.user.username
+                  )}`)
+              : (link = skin[0].displayIcon);
+
           await interaction.reply({
             content: `\u200b[${name}](${link})`,
             ephemeral: true
@@ -2013,7 +2022,10 @@ client.on('interactionCreate', async (interaction) => {
       } else if (interaction.customId.startsWith('account')) {
         const [, customId, id, accountIndex] = interaction.customId.split('/');
 
-        if (id !== interaction.user.id)
+        if (
+          id !== interaction.user.id &&
+          !getSetting(id, 'othersCanUseAccountButtons')
+        )
           return await interaction.reply({
             embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_GENERIC)],
             ephemeral: true
@@ -2050,10 +2062,7 @@ client.on('interactionCreate', async (interaction) => {
         });
 
         if (accountIndex !== 'accessory' && accountIndex !== 'daily') {
-          const success = switchAccount(
-            interaction.user.id,
-            parseInt(accountIndex)
-          );
+          const success = switchAccount(id, parseInt(accountIndex));
           if (!success)
             return await interaction.followUp({
               embeds: [basicEmbed(s(interaction).error.ACCOUNT_NOT_FOUND)],
@@ -2064,39 +2073,31 @@ client.on('interactionCreate', async (interaction) => {
         let newMessage;
         switch (customId) {
           case 'shop':
-            newMessage = await fetchShop(
-              interaction,
-              getUser(interaction.user.id),
-              interaction.user.id,
-              'daily'
-            );
+            newMessage = await fetchShop(interaction, getUser(id), id, 'daily');
             break;
           case 'accessoryshop':
             newMessage = await fetchShop(
               interaction,
-              getUser(interaction.user.id),
-              interaction.user.id,
+              getUser(id),
+              id,
               'accessory'
             );
             break;
           case 'nm':
-            newMessage = await fetchNightMarket(
-              interaction,
-              getUser(interaction.user.id)
-            );
+            newMessage = await fetchNightMarket(interaction, getUser(id));
             break;
           case 'bp':
-            newMessage = await renderBattlepassProgress(interaction);
+            newMessage = await renderBattlepassProgress(interaction, id);
             break;
           case 'alerts':
             newMessage = await fetchAlerts(interaction);
             break;
           case 'cl':
-            newMessage = await renderCollection(interaction);
+            newMessage = await renderCollection(interaction, id);
             break;
         }
         /* else */ if (customId.startsWith('clw')) {
-          let valorantUser = getUser(interaction.user.id);
+          let valorantUser = getUser(id);
           const [, weaponTypeIndex] = interaction.customId
             .split('/')[1]
             .split('-');
@@ -2104,7 +2105,7 @@ client.on('interactionCreate', async (interaction) => {
             Object.values(WeaponTypeUuid)[parseInt(weaponTypeIndex)];
           newMessage = await collectionOfWeaponEmbed(
             interaction,
-            interaction.user.id,
+            id,
             valorantUser,
             weaponType,
             (await getSkins(valorantUser)).skins
@@ -2115,7 +2116,9 @@ client.on('interactionCreate', async (interaction) => {
           newMessage.components = switchAccountButtons(
             interaction,
             customId,
-            true
+            true,
+            false,
+            id
           );
 
         await message.edit(newMessage);
