@@ -116,7 +116,9 @@ String.prototype.f = function (args, interactionOrId = null, hideName = true) {
 
 // get the strings for a language
 export const s = (input) => {
-  const discLang = resolveDiscordLanguage(input);
+  const discLang = config.localiseText
+    ? resolveDiscordLanguage(input)
+    : DEFAULT_LANG;
 
   if (!languages[discLang]) importLanguage(discLang);
   return languages[discLang] || languages[DEFAULT_LANG];
@@ -124,7 +126,9 @@ export const s = (input) => {
 
 // get the skin/bundle name in a language
 export const l = (names, input) => {
-  let discLocale = resolveDiscordLanguage(input);
+  let discLocale = config.localiseSkinNames
+    ? resolveDiscordLanguage(input)
+    : DEFAULT_LANG;
   let valLocale = discToValLang[discLocale];
   return names[valLocale] || names[DEFAULT_VALORANT_LANG];
 };
@@ -143,10 +147,7 @@ const resolveDiscordLanguage = (input) => {
   if (input instanceof BaseInteraction)
     discLang = getSetting(input.user.id, 'locale');
 
-  if (discLang === 'Automatic') {
-    if (config.localiseSkinNames) discLang = input.locale;
-    else discLang = DEFAULT_LANG;
-  }
+  if (discLang === 'Automatic') discLang = input.locale;
   if (!discLang) discLang = DEFAULT_LANG;
 
   return discLang;

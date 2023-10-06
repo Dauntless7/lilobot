@@ -40,7 +40,8 @@ export const fetchShop = async (
       shop,
       interaction,
       user,
-      await KCEmojiPromise
+      await KCEmojiPromise,
+      targetId
     );
   }
 };
