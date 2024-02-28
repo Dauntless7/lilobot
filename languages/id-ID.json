@@ -1,6 +1,6 @@
 {
   "translation_by": "Yugi Tan",
-  "error":{
+  "error": {
     "NOT_REGISTERED": "**Kamu tidak terdaftar di bot ini!** gunakan `/login`.",
     "NOT_REGISTERED_OTHER": "**Pengguna itu tidak terdaftar di bot ini!**",
     "INVALID_PASSWORD": "Username atau password salah!",
@@ -29,8 +29,8 @@
     "OTHER_SHOP_DISABLED": "**{u} gak ngebolehin buat liat store nya!**",
     "OTHER_COLLECTION_DISABLED": "**{u} gak ngebolehin buat liat koleksi skinnya!**",
     "STATS_DISABLED": "**Shop statistics are currently disabled for this bot!**",
-    "EMPTY_STATS":  "**aku tidak punya status shop untuk ditampilkan!** pake `/shop` untuk mulai.",
-    "NO_STATS_FOR_SKIN":  "**skin itu tidak ada di shop** selama {d} hari!",
+    "EMPTY_STATS": "**aku tidak punya status shop untuk ditampilkan!** pake `/shop` untuk mulai.",
+    "NO_STATS_FOR_SKIN": "**skin itu tidak ada di shop** selama {d} hari!",
     "NOT_UR_MESSAGE_STATS": "**itu bukan pesan mu!** Use `/stats` to browse skin stats.",
     "NOT_UR_MESSAGE_BUNDLE": "**itu bukan pesan mu!** Use `/bundle` to search for bundles.",
     "NOT_UR_MESSAGE_ALERT": "**itu bukan pesan mu!** Use `/alert` to set your own alert.",
@@ -49,7 +49,7 @@
     "GENERIC_ERROR": ":no_entry_sign: **There was an error trying to do that!** I blame Riot.\n`{e}`",
     "QUEUE_WAIT": "TERLALU BANYAK YANG MENGGUNAKAN BOT INI, MOHON TUNGGUUUUU (estimated: <t:{t}:R>)"
   },
-  "info":{
+  "info": {
     "SHOP_HEADER": "Shop harian untuk **{u}** (refresh shop <t:{t}:R>)",
     "ACCESSORY_SHOP_HEADER": "Aksesoris shop for **{u}** (refresh shop <t:{t}:R>)",
     "BUNDLE_HEADER": "Featured bundle: **{b}**",
@@ -128,8 +128,8 @@
     "INCIDENT_TYPE": "incident",
     "LAST_UPDATED": "Last updated <t:{t}:R>",
     "UNHANDLED_COMMAND": "Yer a wizard Harry!",
-    "SELECT_SKIN_WITH_LEVEL":"pilih skin untuk melihat video:",
-    "SELECT_LEVEL_OF_SKIN":"pilih skin level:",
+    "SELECT_SKIN_WITH_LEVEL": "pilih skin untuk melihat video:",
+    "SELECT_LEVEL_OF_SKIN": "pilih skin level:",
     "SHARDS_LOADING": "The bot is still starting up! Please wait a few seconds and try again. (Shards loading...)",
     "NO_MORE_ACCESSORIES": "You've already got all the swagger! :sunglasses:"
   },

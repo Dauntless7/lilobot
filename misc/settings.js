@@ -44,6 +44,10 @@ export const settings = {
     values: [true, false],
     default: true
   },
+  othersCanViewProfile: {
+    values: [true, false],
+    default: true
+  },
   othersCanUseAccountButtons: {
     values: [true, false],
     default: true

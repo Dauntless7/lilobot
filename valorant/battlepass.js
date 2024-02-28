@@ -146,9 +146,7 @@ export const getBattlepassProgress = async (
 
   // https://github.com/techchrism/valorant-api-docs/blob/trunk/docs/Contracts/GET%20Contracts_Fetch.md
   const req = await fetch(
-    `https://pd.${userRegion(user)}.a.pvp.net/contracts/v1/contracts/${
-      user.puuid
-    }`,
+    `https://pd.${userRegion(user)}.a.pvp.net/contracts/v1/contracts/${user.puuid}`,
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,

@@ -24,10 +24,7 @@ export const sendShardMessage = async (message) => {
 
   if (message.type !== 'logMessages')
     localLog(
-      `Sending message to other shards: ${JSON.stringify(message).substring(
-        0,
-        100
-      )}`
+      `Sending message to other shards: ${JSON.stringify(message).substring(0, 100)}`
     );
 
   // I know this is a weird way of doing this, but trust me
@@ -64,7 +61,8 @@ const receiveShardMessage = async (message) => {
         message.account,
         message.alerts,
         message.expires,
-        false
+        false,
+        message.alertsLength
       );
       break;
     case 'dailyShop':

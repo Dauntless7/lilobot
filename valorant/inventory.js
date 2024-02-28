@@ -17,9 +17,7 @@ import { s } from '../misc/languages.js';
 export const getEntitlements = async (user, itemTypeId, itemType = 'item') => {
   // https://valapidocs.techchrism.me/endpoint/owned-items
   const req = await fetch(
-    `https://pd.${userRegion(user)}.a.pvp.net/store/v1/entitlements/${
-      user.puuid
-    }/${itemTypeId}`,
+    `https://pd.${userRegion(user)}.a.pvp.net/store/v1/entitlements/${user.puuid}/${itemTypeId}`,
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
@@ -58,9 +56,7 @@ export const getSkins = async (user) => {
       delete skinCache[user.puuid];
     } else {
       console.log(
-        `Fetched skins collection from cache for user ${
-          user.username
-        }! It expires in ${Math.ceil(expiresIn / 1000)}s.`
+        `Fetched skins collection from cache for user ${user.username}! It expires in ${Math.ceil(expiresIn / 1000)}s.`
       );
       return { success: true, skins: cached.skins };
     }
@@ -103,9 +99,7 @@ export const getLoadout = async (user, account) => {
       delete loadoutCache[user.puuid];
     } else {
       console.log(
-        `Fetched loadout from cache for user ${
-          user.username
-        }! It expires in ${Math.ceil(expiresIn / 1000)}s.`
+        `Fetched loadout from cache for user ${user.username}! It expires in ${Math.ceil(expiresIn / 1000)}s.`
       );
       return {
         success: true,
@@ -122,9 +116,7 @@ export const getLoadout = async (user, account) => {
   console.log(`Fetching loadout for ${user.username}...`);
 
   const req = await fetch(
-    `https://pd.${userRegion(user)}.a.pvp.net/personalization/v2/players/${
-      user.puuid
-    }/playerloadout`,
+    `https://pd.${userRegion(user)}.a.pvp.net/personalization/v2/players/${user.puuid}/playerloadout`,
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
@@ -146,9 +138,7 @@ export const getLoadout = async (user, account) => {
   } else if (isMaintenance(json)) return { success: false, maintenance: true };
 
   const req2 = await fetch(
-    `https://pd.${userRegion(user)}.a.pvp.net/favorites/v1/players/${
-      user.puuid
-    }/favorites`,
+    `https://pd.${userRegion(user)}.a.pvp.net/favorites/v1/players/${user.puuid}/favorites`,
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,

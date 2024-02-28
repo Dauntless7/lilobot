@@ -1,6 +1,6 @@
 {
   "translation_by": "Kuon",
-  "error":{
+  "error": {
     "NOT_REGISTERED": "**你尚未在bot上注册!** 尝试 `/login`.",
     "NOT_REGISTERED_OTHER": "**那个用户没有在bot上注册过!**",
     "INVALID_PASSWORD": "无效的用户名或密码!",
@@ -29,8 +29,8 @@
     "OTHER_SHOP_DISABLED": "**{u} 禁用了其他人查看商店的功能!**",
     "OTHER_COLLECTION_DISABLED": "**{u} 禁用了其他人查看收藏的功能!**",
     "STATS_DISABLED": "**商店统计资讯已经对该bot停用!**",
-    "EMPTY_STATS":  "**目前没有可显示的商店统计资讯!** 使用 `/shop` 以开始.",
-    "NO_STATS_FOR_SKIN":  "**该皮肤在过去 {d} 天内不在任何人的商店中**!",
+    "EMPTY_STATS": "**目前没有可显示的商店统计资讯!** 使用 `/shop` 以开始.",
+    "NO_STATS_FOR_SKIN": "**该皮肤在过去 {d} 天内不在任何人的商店中**!",
     "NOT_UR_MESSAGE_STATS": "**这不是你的信息!** 使用 `/stats` 来浏览皮肤统计.",
     "NOT_UR_MESSAGE_BUNDLE": "**这不是你的信息!** 使用 `/bundle` 搜索组合包.",
     "NOT_UR_MESSAGE_ALERT": "**这不是你的信息!** 使用 `/alert` 设置你自己的通知.",
@@ -49,7 +49,7 @@
     "GENERIC_ERROR": ":no_entry_sign: **执行该操作时发生错误!** 都怪 Riot.\n`{e}`",
     "QUEUE_WAIT": "太多人使用这个bot了! 请等待... (预计: <t:{t}:R>)"
   },
-  "info":{
+  "info": {
     "SHOP_HEADER": "**{u}** 的每日商店 (新商店 <t:{t}:R>)",
     "ACCESSORY_SHOP_HEADER": "**{u}** 的配件商店 (新商店 <t:{t}:R>)",
     "BUNDLE_HEADER": "特色组合包: **{b}**",
@@ -128,8 +128,8 @@
     "INCIDENT_TYPE": "事件",
     "LAST_UPDATED": "上次更新于 <t:{t}:R>",
     "UNHANDLED_COMMAND": "你是个巫师, Harry!",
-    "SELECT_SKIN_WITH_LEVEL":"选择皮肤来展示视频:",
-    "SELECT_LEVEL_OF_SKIN":"选择皮肤等级:",
+    "SELECT_SKIN_WITH_LEVEL": "选择皮肤来展示视频:",
+    "SELECT_LEVEL_OF_SKIN": "选择皮肤等级:",
     "SHARDS_LOADING": "bot仍在启动中! 请等待然后重试. (加载中...)",
     "NO_MORE_ACCESSORIES": "你已经拥有了所有配件! :sunglasses:"
   },

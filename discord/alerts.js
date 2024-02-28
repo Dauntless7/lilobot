@@ -5,7 +5,8 @@ import {
   removeAlertActionRow,
   removeDupeAlerts,
   skinNameAndEmoji,
-  wait
+  wait,
+  removeAlertButton
 } from '../misc/util.js';
 import {
   authUser,
@@ -20,7 +21,8 @@ import {
   authFailureMessage,
   basicEmbed,
   renderOffers,
-  VAL_COLOR_1
+  VAL_COLOR_1,
+  skinEmbed
 } from './embed.js';
 import { client } from './bot.js';
 import config from '../misc/config.js';
@@ -29,6 +31,7 @@ import { readUserJson, saveUser } from '../valorant/accountSwitcher.js';
 import { sendShardMessage } from '../misc/shardMessage.js';
 import { VPEmoji } from './emoji.js';
 import { getSetting } from '../misc/settings.js';
+import { ActionRowBuilder } from 'discord.js';
 
 /* Alert format: {
  *     uuid: skin uuid
@@ -170,9 +173,7 @@ export const checkAlerts = async () => {
               } else if (offers.rateLimit) {
                 const waitMs = offers.rateLimit - Date.now();
                 console.error(
-                  `I got ratelimited while checking alerts for user ${id} #${i} for ${Math.floor(
-                    waitMs / 1000
-                  )}s!`
+                  `I got ratelimited while checking alerts for user ${id} #${i} for ${Math.floor(waitMs / 1000)}s!`
                 );
                 await wait(waitMs);
               } else {
@@ -233,24 +234,50 @@ export const sendAlert = async (
   account,
   alerts,
   expires,
-  tryOnOtherShard = true
+  tryOnOtherShard = true,
+  alertsLength = alerts.length
 ) => {
   const user = client.users.cache.get(id);
   const username = user ? user.username : id;
 
-  for (const alert of alerts) {
-    const valorantUser = getUser(id, account);
-    if (!valorantUser) return;
+  let filteredAlerts = {};
+  /* filteredAlerts looks like this:
+    {
+        "channelId1": [{uuid: "skinUUID", channel_id: "channelId1"}, {uuid: "skinUUID2", channel_id: "channelId1"}],
+        "channelId2": [{uuid: "skinUUID3", channel_id: "channelId2"}],
+        "channelId3": [{uuid: "skinUUID5", channel_id: "channelId3"}]
+    }
+    */
+  const valorantUser = getUser(id, account);
+  if (!valorantUser) return;
 
-    const channel = await fetchChannel(alert.channel_id);
+  if (tryOnOtherShard)
+    for (const alert of alerts) {
+      if (!filteredAlerts[alert.channel_id])
+        filteredAlerts[alert.channel_id] = [alert];
+      else filteredAlerts[alert.channel_id].push(alert);
+    }
+  else filteredAlerts[alerts[0].channel_id] = alerts;
+
+  for (const channel_id of Object.keys(filteredAlerts)) {
+    const message = {
+      content: `<@${id}>`,
+      embeds: [],
+      components: []
+    };
+    const buttons = [];
+    const alertsArray = filteredAlerts[channel_id];
+
+    const channel = await fetchChannel(channel_id);
     if (!channel) {
       if (client.shard && tryOnOtherShard) {
         sendShardMessage({
           type: 'alert',
-          alerts: [alert],
+          alerts: filteredAlerts[channel_id],
           id,
           account,
-          expires
+          expires,
+          alertsLength
         });
       }
       continue;
@@ -258,58 +285,93 @@ export const sendAlert = async (
 
     console.log(`Sending alert for user ${username}...`);
 
-    const skin = await getSkin(alert.uuid);
-    console.log(
-      `User ${valorantUser.username} has the skin ${l(
-        skin.names,
-        valorantUser
-      )} in their shop!`
-    );
-
-    await channel
-      .send({
-        content: `<@${id}>`,
-        embeds: [
+    if (alertsArray.length === alertsLength && alertsLength > 1)
+      message.embeds.push({
+        description: s(valorantUser).info.MULTIPLE_ALERT_HAPPENED.f(
+          { i: id, u: valorantUser.username, t: expires },
+          id
+        ),
+        color: VAL_COLOR_1
+      });
+    else if (alertsArray.length < alertsLength)
+      message.embeds.push({
+        description: s(
+          valorantUser
+        ).info.MULTIPLE_ALERT_HAPPENED_ON_DIFF_CHANNEL.f(
           {
-            description: s(valorantUser).info.ALERT_HAPPENED.f(
-              {
-                i: id,
-                u: valorantUser.username,
-                s: await skinNameAndEmoji(skin, channel, valorantUser),
-                t: expires
-              },
-              id
-            ),
-            color: VAL_COLOR_1,
-            thumbnail: {
-              url: skin.icon
-            }
+            i: id,
+            u: valorantUser.username,
+            t: expires,
+            cid: client.application.commands.cache.find(
+              (c) => c.name === 'alerts'
+            ).id
+          },
+          id
+        ),
+        color: VAL_COLOR_1
+      });
+    for (const alert of alertsArray) {
+      const skin = await getSkin(alert.uuid);
+      console.log(
+        `User ${valorantUser.username} has the skin ${l(skin.names)} in their shop!`
+      ); //only we see it, no need to see the skin name in another language
+      if (alertsLength === 1) {
+        message.embeds.push({
+          description: s(valorantUser).info.ALERT_HAPPENED.f(
+            {
+              i: id,
+              u: valorantUser.username,
+              s: await skinNameAndEmoji(skin, channel, valorantUser),
+              t: expires
+            },
+            id
+          ),
+          color: VAL_COLOR_1,
+          thumbnail: {
+            url: skin.icon
           }
-        ],
-        components: [
-          removeAlertActionRow(
+        });
+        buttons.push(
+          removeAlertButton(
             id,
             alert.uuid,
             s(valorantUser).info.REMOVE_ALERT_BUTTON
           )
-        ]
-      })
-      .catch(async (e) => {
-        console.error(
-          `Could not send alert message in #${channel.name}! Do I have the right role?`
         );
+      } else {
+        message.embeds.push(
+          await skinEmbed(
+            alert.uuid,
+            skin.price,
+            id,
+            await VPEmoji(id, channel),
+            channel
+          )
+        );
+        let skinName = l(skin.names, id);
+        if (skinName.length > 80) skinName = skinName.slice(0, 76) + ' ...';
+        buttons.push(removeAlertButton(id, alert.uuid, skinName));
+      }
+    }
+    message.components.push(
+      new ActionRowBuilder().addComponents(buttons.map((i) => i))
+    );
+    await channel.send(message).catch(async (e) => {
+      console.error(
+        `Could not send alert message in #${channel.name}! Do I have the right role?`
+      );
 
-        try {
-          // try to log the alert to the console
-          const user = await client.users.fetch(id).catch(() => {});
-          if (user)
-            console.error(
-              `Please tell ${user.tag} that the ${skin.name} is in their item shop!`
-            );
-        } catch (e) {}
+      try {
+        // try to log the alert to the console
+        const user = await client.users.fetch(id).catch(() => {});
+        if (user)
+          console.error(
+            `Please tell ${user.tag} that the skin his want is in their item shop!`
+          ); // sorry for that :(
+      } catch (e) {}
 
-        console.error(e);
-      });
+      console.error(e);
+    });
   }
 };
 

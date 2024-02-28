@@ -1,111 +1,30 @@
 import {
+  ActionRowBuilder,
+  ActivityType,
+  ApplicationCommandOptionType,
+  ButtonStyle,
   Client,
   GatewayIntentBits,
-  ActionRowBuilder,
   MessageFlagsBitField,
+  ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  ActivityType
+  TextInputBuilder,
+  TextInputStyle
 } from 'discord.js';
 import cron from 'node-cron';
 
-import {
-  authFailureMessage,
-  basicEmbed,
-  renderBundle,
-  secondaryEmbed,
-  skinChosenEmbed,
-  VAL_COLOR_1,
-  botInfoEmbed,
-  ownerMessageEmbed,
-  alertTestResponse,
-  alertsPageEmbed,
-  statsForSkinEmbed,
-  allStatsEmbed,
-  accountsListEmbed,
-  switchAccountButtons,
-  skinCollectionPageEmbed,
-  skinCollectionSingleEmbed,
-  valMaintenancesEmbeds,
-  collectionOfWeaponEmbed
-} from './embed.js';
-import {
-  authUser,
-  fetchRiotClientVersion,
-  getUser,
-  getUserList,
-  getRegion,
-  getUserInfo
-} from '../valorant/auth.js';
-import { getBalance } from '../valorant/shop.js';
-import {
-  getSkin,
-  fetchData,
-  searchSkin,
-  searchBundle,
-  getBundle,
-  clearCache
-} from '../valorant/cache.js';
-import {
-  addAlert,
-  alertExists,
-  alertsPerChannelPerGuild,
-  checkAlerts,
-  fetchAlerts,
-  filteredAlertsForUser,
-  removeAlert,
-  testAlerts
-} from './alerts.js';
-import { RadEmoji, VPEmoji, KCEmoji } from './emoji.js';
-import { queueCookiesLogin, startAuthQueue } from '../valorant/authQueue.js';
-import {
-  login2FA,
-  loginUsernamePassword,
-  retryFailedOperation,
-  waitForAuthQueueResponse
-} from './authManager.js';
-import { renderBattlepassProgress } from '../valorant/battlepass.js';
-import { getOverallStats, getStatsFor } from '../misc/stats.js';
-import {
-  canSendMessages,
-  defer,
-  fetchChannel,
-  fetchMaintenances,
-  getProxyManager,
-  initProxyManager,
-  removeAlertActionRow,
-  skinNameAndEmoji,
-  valNamesToDiscordNames,
-  WeaponTypeUuid,
-  WeaponType,
-  fetch
-} from '../misc/util.js';
+import { spawn } from 'child_process';
+import * as fs from 'fs';
+import fuzzysort from 'fuzzysort';
 import config, { loadConfig, saveConfig } from '../misc/config.js';
-import { localError, localLog, sendConsoleOutput } from '../misc/logger.js';
 import {
   DEFAULT_VALORANT_LANG,
   discToValLang,
   l,
   s
 } from '../misc/languages.js';
-import {
-  deleteUser,
-  deleteWholeUser,
-  findTargetAccountIndex,
-  getNumberOfAccounts,
-  readUserJson,
-  switchAccount,
-  saveUser
-} from '../valorant/accountSwitcher.js';
-import { areAllShardsReady, sendShardMessage } from '../misc/shardMessage.js';
-import {
-  fetchBundles,
-  fetchNightMarket,
-  fetchShop
-} from '../valorant/shopManager.js';
+import { localError, localLog, sendConsoleOutput } from '../misc/logger.js';
 import {
   getSetting,
   handleSettingDropdown,
@@ -116,11 +35,100 @@ import {
   settingName,
   settings
 } from '../misc/settings.js';
-import fuzzysort from 'fuzzysort';
-import { renderCollection, getSkins } from '../valorant/inventory.js';
-import { getLoadout } from '../valorant/inventory.js';
-import { spawn } from 'child_process';
-import * as fs from 'fs';
+import { areAllShardsReady, sendShardMessage } from '../misc/shardMessage.js';
+import { getOverallStats, getStatsFor } from '../misc/stats.js';
+import {
+  WeaponType,
+  WeaponTypeUuid,
+  calcLength,
+  canSendMessages,
+  defer,
+  fetch,
+  fetchChannel,
+  fetchMaintenances,
+  getProxyManager,
+  initProxyManager,
+  removeAlertActionRow,
+  skinNameAndEmoji
+} from '../misc/util.js';
+import {
+  deleteUser,
+  deleteWholeUser,
+  findTargetAccountIndex,
+  getNumberOfAccounts,
+  readUserJson,
+  saveUser,
+  switchAccount
+} from '../valorant/accountSwitcher.js';
+import {
+  authUser,
+  fetchRiotClientVersion,
+  getRegion,
+  getUser,
+  getUserInfo,
+  getUserList
+} from '../valorant/auth.js';
+import { queueCookiesLogin, startAuthQueue } from '../valorant/authQueue.js';
+import { renderBattlepassProgress } from '../valorant/battlepass.js';
+import {
+  clearCache,
+  fetchData,
+  getBundle,
+  getSkin,
+  searchBundle,
+  searchSkin
+} from '../valorant/cache.js';
+import {
+  getLoadout,
+  getSkins,
+  renderCollection
+} from '../valorant/inventory.js';
+import { fetchMatchHistory, getAccountInfo } from '../valorant/profile.js';
+import { getBalance } from '../valorant/shop.js';
+import {
+  fetchBundles,
+  fetchNightMarket,
+  fetchShop
+} from '../valorant/shopManager.js';
+import {
+  addAlert,
+  alertExists,
+  alertsPerChannelPerGuild,
+  checkAlerts,
+  fetchAlerts,
+  filteredAlertsForUser,
+  removeAlert,
+  testAlerts
+} from './alerts.js';
+import {
+  login2FA,
+  loginUsernamePassword,
+  retryFailedOperation,
+  waitForAuthQueueResponse
+} from './authManager.js';
+import {
+  VAL_COLOR_1,
+  accountsListEmbed,
+  alertTestResponse,
+  alertsPageEmbed,
+  allStatsEmbed,
+  authFailureMessage,
+  basicEmbed,
+  botInfoEmbed,
+  collectionOfWeaponEmbed,
+  ownerMessageEmbed,
+  renderBundle,
+  renderCompetitiveMatchHistory,
+  renderProfile,
+  secondaryEmbed,
+  skinChosenEmbed,
+  skinCollectionPageEmbed,
+  skinCollectionSingleEmbed,
+  statsForSkinEmbed,
+  switchAccountButtons,
+  valMaintenancesEmbeds
+} from './embed.js';
+import { KCEmoji, RadEmoji, VPEmoji } from './emoji.js';
 
 export const client = new Client({
   intents: [
@@ -152,7 +160,7 @@ client.on('ready', async () => {
 
   scheduleTasks();
 
-  client.user.setActivity('your mom', { type: ActivityType.Watching });
+  await client.user.setActivity('your store!', { type: ActivityType.Watching });
 
   // deploy commands if different
   if (
@@ -370,6 +378,20 @@ const commands = [
     ]
   },
   {
+    name: 'logout',
+    description: 'Delete your credentials from the bot, but keep your alerts..',
+    options: [
+      {
+        type: ApplicationCommandOptionType.String,
+        name: 'account',
+        description:
+          'The account you want to logout from. Leave blank to logout of your current account.',
+        required: false,
+        autocomplete: true
+      }
+    ]
+  },
+  {
     name: 'forget',
     description: 'Forget and permanently delete your account from the bot.',
     options: [
@@ -456,6 +478,18 @@ const commands = [
   {
     name: 'info',
     description: 'Show information about the bot'
+  },
+  {
+    name: 'profile',
+    description: 'Check your VALORANT profile',
+    options: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: 'user',
+        description: "Optional: see someone else's profile!",
+        required: false
+      }
+    ]
   }
 ];
 
@@ -573,7 +607,8 @@ client.on('messageCreate', async (message) => {
               token: '[redacted]',
               githubToken: config.githubToken
                 ? '[redacted]'
-                : config.githubToken
+                : config.githubToken,
+              HDevToken: config.HDevToken ? '[redacted]' : config.HDevToken
             },
             null,
             2
@@ -741,7 +776,7 @@ client.on('messageCreate', async (message) => {
 
 client.on('interactionCreate', async (interaction) => {
   let maintenanceMessage;
-  if (config.maintenanceMode)
+  if (config.maintenanceMode && interaction.user.id !== config.ownerId)
     maintenanceMessage =
       config.status ||
       'The bot is currently under maintenance! Please be patient.';
@@ -1259,6 +1294,7 @@ client.on('interactionCreate', async (interaction) => {
 
           break;
         }
+        case 'logout':
         case 'forget': {
           const accountCount = getNumberOfAccounts(interaction.user.id);
           if (accountCount === 0)
@@ -1531,8 +1567,9 @@ client.on('interactionCreate', async (interaction) => {
         case 'info': {
           let guildCount, userCount;
           if (client.shard) {
-            const guildCounts =
-              await client.shard.fetchClientValues('guilds.cache.size');
+            const guildCounts = await client.shard.fetchClientValues(
+              'guilds.cache.size'
+            );
             guildCount = guildCounts.reduce(
               (acc, guildCount) => acc + guildCount,
               0
@@ -1566,6 +1603,49 @@ client.on('interactionCreate', async (interaction) => {
               config.status
             )
           );
+
+          break;
+        }
+        case 'profile': {
+          let targetUser = interaction.user;
+
+          const otherUser = interaction.options.getUser('user');
+          if (otherUser && otherUser.id !== interaction.user.id) {
+            const otherValorantUser = getUser(otherUser.id);
+            if (!otherValorantUser)
+              return await interaction.reply({
+                embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED_OTHER)]
+              });
+
+            if (!getSetting(otherUser.id, 'othersCanViewProfile'))
+              return await interaction.reply({
+                embeds: [
+                  basicEmbed(
+                    s(interaction).error.OTHER_PROFILE_DISABLED.f({
+                      u: `<@${otherUser.id}>`
+                    })
+                  )
+                ]
+              });
+
+            targetUser = otherUser;
+          } else if (!valorantUser)
+            return await interaction.reply({
+              embeds: [basicEmbed(s(interaction).error.NOT_REGISTERED)],
+              ephemeral: true
+            });
+
+          await defer(interaction);
+          const user = getUser(targetUser.id);
+          const message = await renderProfile(
+            interaction,
+            await getAccountInfo(user, interaction),
+            targetUser.id
+          );
+
+          await interaction.followUp(message);
+
+          console.log(`Sent ${targetUser.tag}'s profile!`); // also logged if maintenance/login failed
 
           break;
         }
@@ -2060,8 +2140,11 @@ client.on('interactionCreate', async (interaction) => {
           embeds: message.embeds,
           components: message.components
         });
-
-        if (accountIndex !== 'accessory' && accountIndex !== 'daily') {
+        if (
+          accountIndex !== 'accessory' &&
+          accountIndex !== 'daily' &&
+          accountIndex !== 'c'
+        ) {
           const success = switchAccount(id, parseInt(accountIndex));
           if (!success)
             return await interaction.followUp({
@@ -2095,6 +2178,21 @@ client.on('interactionCreate', async (interaction) => {
           case 'cl':
             newMessage = await renderCollection(interaction, id);
             break;
+          case 'profile':
+            newMessage = await renderProfile(
+              interaction,
+              await getAccountInfo(getUser(id)),
+              id
+            );
+            break;
+          case 'comphistory':
+            newMessage = await renderCompetitiveMatchHistory(
+              interaction,
+              await getAccountInfo(getUser(id)),
+              await fetchMatchHistory(interaction, getUser(id), 'competitive'),
+              id
+            );
+            break;
         }
         /* else */ if (customId.startsWith('clw')) {
           let valorantUser = getUser(id);
@@ -2108,7 +2206,9 @@ client.on('interactionCreate', async (interaction) => {
             id,
             valorantUser,
             weaponType,
-            (await getSkins(valorantUser)).skins
+            (
+              await getSkins(valorantUser)
+            ).skins
           );
         }
 
@@ -2122,6 +2222,162 @@ client.on('interactionCreate', async (interaction) => {
           );
 
         await message.edit(newMessage);
+      } else if (interaction.customId.startsWith('gotopage')) {
+        let [, pageId, userId, max] = interaction.customId.split('/');
+        let weaponTypeIndex;
+        if (pageId === 'clwpage')
+          [, pageId, weaponTypeIndex, userId, max] =
+            interaction.customId.split('/');
+
+        if (userId !== interaction.user.id) {
+          if (pageId === 'changestatspage') {
+            return await interaction.reply({
+              embeds: [basicEmbed(s(interaction).error.NOT_UR_MESSAGE_STATS)],
+              ephemeral: true
+            });
+          } else if (pageId === 'changealertspage') {
+            return await interaction.reply({
+              embeds: [basicEmbed(s(interaction).error.NOT_UR_ALERT)],
+              ephemeral: true
+            });
+          }
+        }
+
+        const modal = new ModalBuilder()
+          .setCustomId(
+            `gotopage/${pageId}${
+              weaponTypeIndex ? `/${weaponTypeIndex}` : ''
+            }/${userId}/${max}`
+          )
+          .setTitle(s(interaction).modal.PAGE_TITLE);
+
+        const pageInput = new TextInputBuilder()
+          .setMinLength(1)
+          .setMaxLength(calcLength(max))
+          .setPlaceholder(s(interaction).modal.PAGE_INPUT_PLACEHOLDER)
+          .setRequired(true)
+          .setCustomId('pageIndex')
+          .setLabel(s(interaction).modal.PAGE_INPUT_LABEL.f({ max: max }))
+          .setStyle(TextInputStyle.Short);
+
+        const q1 = new ActionRowBuilder().addComponents(pageInput);
+        modal.addComponents(q1);
+        await interaction.showModal(modal);
+      }
+    } catch (e) {
+      await handleError(e, interaction);
+    }
+  } else if (interaction.isModalSubmit()) {
+    try {
+      if (interaction.customId.startsWith('gotopage')) {
+        let [, pageId, userId, max] = interaction.customId.split('/');
+        let weaponTypeIndex;
+        if (pageId === 'clwpage')
+          [, pageId, weaponTypeIndex, userId, max] =
+            interaction.customId.split('/');
+        const pageIndex = interaction.fields.getTextInputValue('pageIndex');
+
+        if (isNaN(Number(pageIndex))) {
+          return await interaction.reply({
+            embeds: [basicEmbed(s(interaction).error.NOT_A_NUMBER)],
+            ephemeral: true
+          });
+        } else if (Number(pageIndex) > max || Number(pageIndex) <= 0) {
+          return await interaction.reply({
+            embeds: [
+              basicEmbed(
+                s(interaction).error.INVALID_PAGE_NUMBER.f({ max: max })
+              )
+            ],
+            ephemeral: true
+          });
+        }
+
+        switch (pageId) {
+          case 'clpage':
+            clpage();
+            break;
+          case 'clwpage':
+            clwpage();
+            break;
+          case 'changealertspage':
+            await interaction.update(
+              await alertsPageEmbed(
+                interaction,
+                await filteredAlertsForUser(interaction),
+                parseInt(pageIndex - 1),
+                await VPEmoji(interaction)
+              )
+            );
+            break;
+          case 'changestatspage':
+            await interaction.update(
+              await allStatsEmbed(
+                interaction,
+                await getOverallStats(),
+                parseInt(pageIndex - 1)
+              )
+            );
+            break;
+        }
+
+        async function clpage() {
+          let user;
+          if (userId !== interaction.user.id) user = getUser(userId);
+          else user = valorantUser;
+
+          const loadoutResponse = await getLoadout(user);
+          if (!loadoutResponse.success)
+            return await interaction.reply(
+              authFailureMessage(
+                interaction,
+                loadoutResponse,
+                s(interaction).error.AUTH_ERROR_COLLECTION,
+                userId !== interaction.user.id
+              )
+            );
+
+          await interaction.update(
+            await skinCollectionPageEmbed(
+              interaction,
+              userId,
+              user,
+              loadoutResponse,
+              parseInt(pageIndex - 1)
+            )
+          );
+        }
+
+        async function clwpage() {
+          const weaponType =
+            Object.values(WeaponTypeUuid)[parseInt(weaponTypeIndex)];
+
+          let user;
+          if (userId !== interaction.user.id) user = getUser(userId);
+          else user = valorantUser;
+
+          const skinsResponse = await getSkins(user);
+          if (!skinsResponse.success)
+            return await interaction.reply(
+              authFailureMessage(
+                interaction,
+                skinsResponse,
+                s(interaction).error.AUTH_ERROR_COLLECTION,
+                userId !== interaction.user.id
+              )
+            );
+
+          await interaction.update(
+            await collectionOfWeaponEmbed(
+              interaction,
+              userId,
+              user,
+              weaponType,
+              skinsResponse.skins,
+              parseInt(pageIndex - 1)
+            )
+          );
+        }
       }
     } catch (e) {
       await handleError(e, interaction);
@@ -2218,6 +2474,12 @@ const handleError = async (e, interaction) => {
     console.error(e2);
   }
 };
+
+// don't crash the bot, no matter what!
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception!');
+  console.error(err.stack || err);
+});
 
 export const startBot = () => {
   console.log('Logging in...');

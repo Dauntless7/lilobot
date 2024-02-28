@@ -1,5 +1,4 @@
 data/*
 config.json
 node_modules/
-skinpeek.code-workspace
-.prettierignore
+valobot.code-workspace

@@ -28,6 +28,7 @@
     "MAINTENANCE": "**Valorant sunucuları şu anda bakım nedeniyle kapalı!** Lütfen daha sonra tekrar deneyin.",
     "OTHER_SHOP_DISABLED": "**{u} Başkalarının mağazasına bakmasını istemediğinden bu özelliği devre dışı bıraktı!**",
     "OTHER_COLLECTION_DISABLED": "**{u} Başkalarının koleksiyonuna bakmasını istemediğinden bu özelliği devre dışı bıraktı!**",
+    "OTHER_PROFILE_DISABLED": "**{u} Başkalarının profiline bakmasını istemediğinden bu özelliği devre dışı bıraktı!**",
     "STATS_DISABLED": "**Mağaza istatistiği bu bot için şu anda kapalı!**",
     "EMPTY_STATS": "**Gösterebilecek bir mağaza istatistiğine sahip değilim!** `/shop` komutunu kullanarak başlayabilirsin.",
     "NO_STATS_FOR_SKIN": "**Bu skin son {d} gün içerisinde hiç kimsenin mağazasında olmadı!**",
@@ -47,9 +48,11 @@
     "ACCOUNT_NUMBER_TOO_HIGH": "**{n} tane hesaba sahipsin!**",
     "TOO_MANY_ACCOUNTS": "**Botta maksimum {n} hesabınız olabilir!** `/forget` komutuyla bazı hesaplarınızı sildikten sonra tekrar deneyin.",
     "GENERIC_ERROR": ":no_entry_sign: **Bunu yapmaya çalışırken bir hata oluştu!** Riot'u suçluyorum.\n`{e}`",
-    "SHARDS_LOADING": "Bot hala başlatılıyor! Lütfen birkaç saniye bekleyin ve tekrar deneyin. ( Shard yükleniyor...)",
     "QUEUE_WAIT": "Şu anda birçok kişi botu kullanıyor! Lütfen bekleyin... (tahmini süre: <t:{t}:R>)",
-    "NO_MORE_ACCESSORIES": "Zaten bütün aksesuarlara sahipsin! :sunglasses:"
+    "NOT_A_NUMBER": "Bu bir sayı değil, lütfen geçerli bir sayı girin.",
+    "INVALID_PAGE_NUMBER": "Geçersiz sayfa, lütfen **1 - {max}** arasında bir değer girin.",
+    "NO_MATCH_DATA": "{m} bir eşleşme bulunamadı, belki de bir maça girmenin zamanı gelmiştir.",
+    "WAIT_FOR_PREVIUS_REQUEST": "Hala önceki talebiniz üzerinde çalışıyoruz, lütfen tekrar denemeden önce biraz bekleyin!"
   },
   "info": {
     "SHOP_HEADER": "**{u}** için günlük mağaza (Yeni mağaza <t:{t}:R>)",
@@ -75,17 +78,21 @@
     "INFO_OWNER": "Sahip",
     "INFO_STATUS": "Durum",
     "INFO_RUNNING": "<t:{t1}:f> (<t:{t2}:R> çalışmaya başladı)",
+    "INFO_SOURCE": "Kaynak kodu",
     "NMARKET_HEADER": "**{u}** için Gece Pazarı (<t:{t}:R> Sona eriyor)",
     "WALLET_HEADER": "**{u}** Cüzdanı:",
     "VPOINTS": "VALORANT Puanı",
     "RADIANITE": "Radyanit",
     "KCREDIT": "Kingdom Kredisi",
-    "ALERT_HAPPENED": ":tada: <@{i}> **{s}**, **{u}** hesabının mağazasında!\n<t:{t}:R> Gitmiş olacak.",
+    "ALERT_HAPPENED": ":tada: <@{i}> **{s}**, **{u}** hesabının mağazasında!\n<t:{t}:R> gitmiş olacak.",
+    "MULTIPLE_ALERT_HAPPENED": ":tada: <@{i}> **Bugün şanslı günündesin!** İstediğin birçok skin **{u}** hesabının mağazasında.\n<t:{t}:R> gitmiş olacak.",
+    "MULTIPLE_ALERT_HAPPENED_ON_DIFF_CHANNEL": ":tada: <@{i}> **Bugün şanslı günündesin!** İstediğin birçok skin **{u}** hesabının mağazasında.\n<t:{t}:R> gitmiş olacak.\nAncak hepsi bu mesajda değil, bazıları uyarı ayarladığınız diğer kanallarda.\nOnları görmek için </alerts:{cid}> kullanın.",
     "ALERT_CHOICE": "Hangi kaplama için bildirim ayarlamak istersiniz?",
     "ALERT_CHOICE_PLACEHOLDER": "Kaplama seç:",
     "ALERT_SET": "**{s}** için bildirim başarıyla ayarlandı!",
     "ALERT_BP_SKIN": "\n***Not:** Bu bir savaş bileti kaplaması, bu yüzden mağazanda görünmeyecek!*",
     "ALERT_IN_CHANNEL": "<#{c}> kanalında",
+    "ALERT_IN_CHANNEL_NAME": "#{c} kanalında",
     "ALERT_IN_DM_CHANNEL": "Direkt mesajlarda",
     "ONE_ALERT": "Ayarlanmış bir bildiriminiz var:",
     "MULTIPLE_ALERTS": "Şu anda kurduğunuz bildirimler:",
@@ -120,6 +127,11 @@
     "SWITCH_DESIGN_BUTTON": "Tasarımı değiştir",
     "ACCESSORY_SHOP_SWITCH_BUTTON": "Aksesuar mağazası",
     "DAILY_SHOP_SWITCH_BUTTON": "Günlük mağaza",
+    "NIGHT_MARKET_BUTTON": "Gece.Pazarı",
+    "BATTLEPASS_BUTTON": "Savaş bileti",
+    "COLLECTION_BUTTON": "Koleksiyon",
+    "COMPETITIVE_HISTORY_BUTTON": "Rekabetçi Maç Geçmişi",
+    "RETURN_BUTTON": "Geri dön",
     "LOADING": "Yükleniyor...",
     "HIDDEN_USERNAME": "Kullanıcı adı gizli",
     "NO_USERNAME": "[Kullanıcı adı yok]",
@@ -130,7 +142,10 @@
     "LAST_UPDATED": "Son güncelleme <t:{t}:R>",
     "UNHANDLED_COMMAND": "Yer a wizard harry!",
     "SELECT_SKIN_WITH_LEVEL": "Gösterilecek kaplamayı seçin:",
-    "SELECT_LEVEL_OF_SKIN": "Kaplama seviyesini seçin:"
+    "SELECT_LEVEL_OF_SKIN": "Kaplama seviyesini seçin:",
+    "SHARDS_LOADING": "Bot hala başlatılıyor! Lütfen birkaç saniye bekleyin ve tekrar deneyin. ( Shard yükleniyor...)",
+    "NO_MORE_ACCESSORIES": "Zaten bütün aksesuarlara sahipsin! :sunglasses:",
+    "PROFILE_PEAK_RANK": "En Yüksek Rütbe"
   },
   "battlepass": {
     "CALCULATIONS_TITLE": "\uD83D\uDCC8 Savaş bileti hesaplaması",
@@ -171,10 +186,25 @@
     "SET_QUESTION": "**{s}** ayarını ne yapmak istiyorsunuz?",
     "CONFIRMATION": "**{s}** ayarı artık **{v}** olarak ayarlandı.",
     "dailyShop": "Mağazamı her gün gönder",
+    "pingOnAutoDailyShop": "Mağazamı otomatik olarak gönderdiğinizde beni @etiketleyin",
     "hideIgn": "Oyun içi adı gizle",
     "othersCanViewShop": "Başkalarının kullanıcı adınızla /shop kullanmasına izin verin",
     "othersCanViewColl": "Başkalarının kullanıcı adınızla /collection kullanmasına izin verin",
+    "othersCanViewProfile": "Başkalarının kullanıcı adınızla /profile kullanmasına izin verin",
     "othersCanUseAccountButtons": "Başkalarının /shop gibi komutlarda sizin hesap butonlarınızı kullanmasına izin verin",
     "locale": "Dil"
+  },
+  "modal": {
+    "PAGE_TITLE": "Sayfa Gezgini",
+    "PAGE_INPUT_PLACEHOLDER": "Lütfen sadece sayı girin.",
+    "PAGE_INPUT_LABEL": "Sayfaya git (1-{max})"
+  },
+  "match": {
+    "COMPETITIVE": "Rekabetçi",
+    "RANKED_RATING": "KP",
+    "AVERAGE_DAMAGE_ROUND": "OrtHsr",
+    "AVERAGE_COMBAT_SCORE": "OrtÇS",
+    "HS_PERCENT": "%HS",
+    "PERCENT": "%{v}"
   }
 }

@@ -1,4 +1,4 @@
-import { fetchChannel } from '../misc/util.js';
+import { fetchChannel, isToday } from '../misc/util.js';
 import { VPEmoji, KCEmoji } from '../discord/emoji.js';
 import {
   renderBundles,
@@ -7,7 +7,7 @@ import {
   renderAccessoryOffers
 } from '../discord/embed.js';
 import { getUser } from './auth.js';
-import { getBundles, getNightMarket, getOffers } from './shop.js';
+import { getBundles, getNightMarket, getOffers, NMTimestamp } from './shop.js';
 
 export const fetchShop = async (
   interaction,
@@ -43,6 +43,15 @@ export const fetchShop = async (
       await KCEmojiPromise,
       targetId
     );
+  }
+};
+
+export const isThereANM = () => {
+  if (!NMTimestamp) return false;
+  if (isToday(NMTimestamp)) return true;
+  else {
+    //NMTimestamp = null; not working, waiting for fix.
+    return false;
   }
 };
 

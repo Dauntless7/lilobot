@@ -127,9 +127,7 @@ const cleanupStats = () => {
 };
 
 const formatDate = (date) => {
-  return `${date.getUTCDate()}-${
-    date.getUTCMonth() + 1
-  }-${date.getUTCFullYear()}`;
+  return `${date.getUTCDate()}-${date.getUTCMonth() + 1}-${date.getUTCFullYear()}`;
 };
 
 const daysAgo = (dateString) => {
