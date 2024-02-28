@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
 
       - name: Install pnpm
         run: npm install -g pnpm
@@ -45,7 +45,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEPLOY_HOST }}
-          username: bro
+          username: ${{ vars.DEPLOY_HOST_USERNAME }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            NODE_ENV=production pm2 restart valobot --update-env
+            NODE_ENV=production pm2 restart ${{ vars.PM2_PROCESS_NAME }} --update-env
