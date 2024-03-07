@@ -494,6 +494,51 @@ const commands = [
 ];
 
 client.on('messageCreate', async (message) => {
+  if (message.channelId === '1214256001184960582') {
+    if (message.author.bot) return; // Ignore messages from bots
+
+    // Check if the message contains a number
+    const number = parseInt(message.content);
+    if (isNaN(number)) return; // Ignore if the message doesn't contain a valid number
+
+    // Check if the message has a reaction from the counter bot
+    const counterBotReaction = message.reactions.cache.find(
+      (reaction) => reaction.emoji.name === 'white_check_mark'
+    );
+    if (!counterBotReaction) return; // Ignore if the message doesn't have the counter bot's reaction
+
+    // Get the next number
+    const nextNumber = number + 1;
+
+    // Send a message with the next number
+    const nextNumberMessage = await message.channel.send({
+      embeds: [
+        {
+          title: 'You have one job...',
+          description: `THE NEXT NUMBER IS **${nextNumber}**.`,
+          color: 0
+        }
+      ]
+    });
+
+    // Listen for the next number message and delete the "THE NEXT NUMBER IS" message
+    const filter = (m) => !m.author.bot && m.content === nextNumber.toString();
+    const collector = message.channel.createMessageCollector({
+      filter,
+      time: 43200000 // 12h
+    });
+
+    collector.on('collect', (_) => {
+      nextNumberMessage.delete();
+      collector.stop();
+    });
+
+    collector.on('end', (_, reason) => {
+      if (reason === 'time') {
+        nextNumberMessage.delete();
+      }
+    });
+  }
   try {
     let isAdmin = false;
     if (!config.ownerId) isAdmin = true;
