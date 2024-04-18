@@ -1,5 +1,7 @@
 import fs from 'fs';
-import { authUser, deleteUserAuth, getUser } from './auth.js';
+import config from '../misc/config.js';
+import { mqGetShop, useMultiqueue } from '../misc/multiqueue.js';
+import { addStore } from '../misc/stats.js';
 import {
   discordTag,
   fetch,
@@ -10,11 +12,9 @@ import {
   isSameDay,
   userRegion
 } from '../misc/util.js';
-import { addBundleData, getSkin, getSkinFromSkinUuid } from './cache.js';
-import { addStore } from '../misc/stats.js';
-import config from '../misc/config.js';
 import { deleteUser, saveUser } from './accountSwitcher.js';
-import { mqGetShop, useMultiqueue } from '../misc/multiqueue.js';
+import { authUser, deleteUserAuth, getUser } from './auth.js';
+import { addBundleData, getSkin, getSkinFromSkinUuid } from './cache.js';
 
 export const getShop = async (id, account = null) => {
   if (useMultiqueue()) return await mqGetShop(id, account);
@@ -27,11 +27,18 @@ export const getShop = async (id, account = null) => {
 
   // https://github.com/techchrism/valorant-api-docs/blob/trunk/docs/Store/GET%20Store_GetStorefrontV2.md
   const req = await fetch(
-    `https://pd.${userRegion(user)}.a.pvp.net/store/v2/storefront/${user.puuid}`,
+    `https://pd.${userRegion(user)}.a.pvp.net/store/v2/storefront/${
+      user.puuid
+    }`,
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
-        'X-Riot-Entitlements-JWT': user.auth.ent
+        'X-Riot-Entitlements-JWT': user.auth.ent,
+
+        // fix for HTTP 400 (thx Zxc and Manuel_Hexe)
+        'X-Riot-ClientPlatform':
+          'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9',
+        'X-Riot-ClientVersion': 'release-08.07-shipping-9-2444158'
       }
     }
   );
@@ -144,7 +151,10 @@ export const getBalance = async (id, account = null) => {
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
-        'X-Riot-Entitlements-JWT': user.auth.ent
+        'X-Riot-Entitlements-JWT': user.auth.ent,
+        'X-Riot-ClientPlatform':
+          'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9',
+        'X-Riot-ClientVersion': 'release-08.07-shipping-9-2444158'
       }
     }
   );
