@@ -1,5 +1,7 @@
-import { authUser, deleteUserAuth, getUser } from './auth.js';
+import { renderBattlepass } from '../discord/embed.js';
+import { l, s } from '../misc/languages.js';
 import { fetch, isMaintenance, userRegion } from '../misc/util.js';
+import { authUser, deleteUserAuth, getUser } from './auth.js';
 import {
   getBattlepassInfo,
   getBuddy,
@@ -8,9 +10,8 @@ import {
   getSpray,
   getValorantVersion
 } from './cache.js';
-import { renderBattlepass } from '../discord/embed.js';
 import { getEntitlements } from './inventory.js';
-import { l, s } from '../misc/languages.js';
+import { RIOT_CLIENT_HEADERS } from './shop.js';
 
 const AVERAGE_UNRATED_XP_CONSTANT = 4200;
 const SPIKERUSH_XP_CONSTANT = 1000;
@@ -146,12 +147,15 @@ export const getBattlepassProgress = async (
 
   // https://github.com/techchrism/valorant-api-docs/blob/trunk/docs/Contracts/GET%20Contracts_Fetch.md
   const req = await fetch(
-    `https://pd.${userRegion(user)}.a.pvp.net/contracts/v1/contracts/${user.puuid}`,
+    `https://pd.${userRegion(user)}.a.pvp.net/contracts/v1/contracts/${
+      user.puuid
+    }`,
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
         'X-Riot-Entitlements-JWT': user.auth.ent,
-        'X-Riot-ClientVersion': (await getValorantVersion()).riotClientVersion
+        'X-Riot-ClientVersion': (await getValorantVersion()).riotClientVersion,
+        ...RIOT_CLIENT_HEADERS
       }
     }
   );

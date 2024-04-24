@@ -1,3 +1,9 @@
+import fs from 'fs';
+import fuzzysort from 'fuzzysort';
+import { client } from '../discord/bot.js';
+import config from '../misc/config.js';
+import { DEFAULT_VALORANT_LANG, discToValLang } from '../misc/languages.js';
+import { sendShardMessage } from '../misc/shardMessage.js';
 import {
   asyncReadJSONFile,
   fetch,
@@ -6,12 +12,7 @@ import {
   userRegion
 } from '../misc/util.js';
 import { authUser, getUser, getUserList } from './auth.js';
-import config from '../misc/config.js';
-import fuzzysort from 'fuzzysort';
-import fs from 'fs';
-import { DEFAULT_VALORANT_LANG, discToValLang } from '../misc/languages.js';
-import { client } from '../discord/bot.js';
-import { sendShardMessage } from '../misc/shardMessage.js';
+import { RIOT_CLIENT_HEADERS } from './shop.js';
 
 const formatVersion = 13;
 let gameVersion;
@@ -260,7 +261,8 @@ const getPrices = async (gameVersion, id = null) => {
     {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
-        'X-Riot-Entitlements-JWT': user.auth.ent
+        'X-Riot-Entitlements-JWT': user.auth.ent,
+        ...RIOT_CLIENT_HEADERS
       }
     }
   );

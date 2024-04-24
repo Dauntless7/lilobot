@@ -16,6 +16,18 @@ import { deleteUser, saveUser } from './accountSwitcher.js';
 import { authUser, deleteUserAuth, getUser } from './auth.js';
 import { addBundleData, getSkin, getSkinFromSkinUuid } from './cache.js';
 
+export const RIOT_CLIENT_HEADERS = {
+  // fix for HTTP 400 (thx Zxc and Manuel_Hexe)
+  'X-Riot-ClientPlatform':
+    'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9',
+  'X-Riot-ClientVersion': 'release-08.07-shipping-9-2444158'
+  // todo: get ClientVersion from Valorant API to not have to automatically update it.
+  // before that, got to make a cache for it, so that we don't need to fetch it
+  // every time someone uses /shop, but make sure it doesn't interfere with all
+  // the other caches (skins, rarities, etc.) because those need the actual
+  // uncached client version.
+};
+
 export const getShop = async (id, account = null) => {
   if (useMultiqueue()) return await mqGetShop(id, account);
 
@@ -34,11 +46,7 @@ export const getShop = async (id, account = null) => {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
         'X-Riot-Entitlements-JWT': user.auth.ent,
-
-        // fix for HTTP 400 (thx Zxc and Manuel_Hexe)
-        'X-Riot-ClientPlatform':
-          'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9',
-        'X-Riot-ClientVersion': 'release-08.07-shipping-9-2444158'
+        ...RIOT_CLIENT_HEADERS
       }
     }
   );
@@ -152,9 +160,7 @@ export const getBalance = async (id, account = null) => {
       headers: {
         Authorization: 'Bearer ' + user.auth.rso,
         'X-Riot-Entitlements-JWT': user.auth.ent,
-        'X-Riot-ClientPlatform':
-          'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9',
-        'X-Riot-ClientVersion': 'release-08.07-shipping-9-2444158'
+        ...RIOT_CLIENT_HEADERS
       }
     }
   );
